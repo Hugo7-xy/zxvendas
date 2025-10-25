@@ -1,0 +1,92 @@
+{
+  "populares": {
+    "icon": "/images/icons/Itenspopulares1.png",
+    "items": [
+      "Barbinha ",
+      "Anjo Azul",
+      "Anjo Red",
+      "Pacote Sombra Roxa",
+      "Gola Alta Preta",
+      "Top Criminal (Verde)",
+      "Top Criminal (Vermelho)",
+      "Top Criminal (Neon)",
+      "Top Criminal (Amarelo)",
+      "Top Criminal (Azul)",
+      "Gola Alta Preta",
+      "Pacote Dino (Angélico, Azul, etc.)",
+      "Tênis Angelical (Swift)",
+      "Cabelo de Ouro (Pacote Rei)"
+    ]
+  },
+  "parcerias": {
+    "icon": "/images/icons/parcerias1.png",
+    "items": [
+      "Top Criminal PLCP",
+      "Pacote Titã de Ataque",
+      "Pacote Titã Blindado ",
+      "Pijama Saitama ",
+      "Pacote Genos ",
+      "Blue lock",
+      "Sasuke",
+      "Itachi",
+      "Madara"
+    ]
+  },
+  "passes": {
+    "icon": "/images/icons/passe.png",
+    "items": [
+      "FULL PASSE",
+      "PRE FULL PASSE",
+      "Passe Flor de Sakura (1º Passe)",
+      "Passe Hip Hop (2º Passe )",
+      "Passe Caçadores de Recompensas (3º Passe)",
+      "Passe do Rei (4º Passe)",
+      "Passe Ilha do Tesouro(5º Passe)",
+      "Passe 8BITS (6º Passe )",
+      "Passe CyberPunk (7º Passe )",
+      "Passe SteamPunk (8º Passe )",
+      "Passe Manomax "
+      
+    ]
+  },
+  "emotes": {
+    "icon": "/images/icons/emotes1.png",
+    "items": [
+      "Bandeirão ",
+      "Antbombas",
+      "Galinha",
+      "Egipcio",
+      "Poses",
+      "Redenção"
+    ]
+  },
+  "armasEvolutivas": {
+    "icon": "/images/icons/evolutiva1.png",
+    "items": [
+      "AK-47 Dragão Flamejante ",
+      "MP40 Cobra Venenosa ",
+      "UMP Dia do Booyah",
+      "M1014 Dragão Esmeralda",
+      "SCAR Megalodonte",
+      "XM8 Trovão Guardião",
+      "MP5 Fascínio Dourado"
+    ]
+  },
+  "punhos": {
+    "icon": "/images/icons/punhos1.png",
+    "items": [
+      "Punho Congelante",
+      "Punho Ardente ",
+      "Punho do Trovão",
+      "Punho Nocauteador ",
+      "Punho Hiperlivro Dragão"
+    ]
+  },
+  "incubadoras": {
+    "icon": "/images/icons/incubadora1.png",
+    "items": [
+      "Incubadora Dinástica ",
+      "Incubadora Cristal Estelar"
+    ]
+  }
+}

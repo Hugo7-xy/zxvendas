@@ -1,0 +1,57 @@
+{
+  "main": [
+    {
+      "name": "Discord Oficial",
+      "icon": "fab fa-discord",
+      "url": "https://discord.gg/F3KEytyFC8",
+      "class": "discord"
+    },
+    {
+      "name": "Canal Telegram",
+      "icon": "fab fa-telegram",
+      "url": "https://t.me/lojadefreefiremf",
+      "class": "telegram"
+    }
+  ],
+  "franchises": [
+    {
+      "name": "Franquia F1 - Grupos Principais",
+      "links": [
+        {
+          "name": "Grupo 01",
+          "url": "https://chat.whatsapp.com/SEU-LINK-GRUPO-01"
+        },
+        {
+          "name": "Grupo 02",
+          "url": "https://chat.whatsapp.com/SEU-LINK-GRUPO-02"
+        },
+        {
+          "name": "Grupo 03",
+          "url": "https://chat.whatsapp.com/SEU-LINK-GRUPO-03"
+        }
+      ]
+    },
+    {
+      "name": "Franquia F2 - Novos Grupos",
+      "links": [
+        {
+          "name": "Grupo 11",
+          "url": "https://chat.whatsapp.com/SEU-LINK-GRUPO-11"
+        },
+        {
+          "name": "Grupo 12",
+          "url": "https://chat.whatsapp.com/SEU-LINK-GRUPO-12"
+        }
+      ]
+    },
+    {
+      "name": "Franquia Reserva",
+      "links": [
+        {
+          "name": "Grupo Reserva",
+          "url": "https://chat.whatsapp.com/SEU-LINK-GRUPO-RESERVA"
+        }
+      ]
+    }
+  ]
+}
