@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/((?!api/|data/|css/|js/|favicon.ico|fundo-dourado.jpg).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "populares": {
+    "icon": "/images/icons/Itenspopulares1.png",
+    "items": [
+      "Anjo Azul",
+      "Anjo Red",
+      "Anjo Amarela",
+      "Anjo Branca",
+      "Anjo Verde",
+      "Barbinha",
+      "Aventureiro",
+      "Cabelo Fitinha",
+      "Jaqueta Beta",
+      "Cabelo Rosa",
+      "Calça Jazz",
+      "Calça Sobrevivente",
+      "Gola Alta Preta",
+      "Gola Alta Branca",
+      "Tênis Angelical",
+      "Dunk Master",
+      "Mestre S7"
+    ]
+  },
+  "parcerias": {
+    "icon": "/images/icons/parcerias1.png",
+    "items": [
+      "Ragnarok",
+      "Pijama Saitama",
+      "Guenos",
+      "Attack on Titãs",
+      "Poring"
+    ]
+  },
+  "passes": {
+    "icon": "/images/icons/passe.png",
+    "items": [
+      "Full Passe",
+      "Quase Full Passe",
+      "1º Passe",
+      "2º Passe",
+      "3º Passe",
+      "4º Passe",
+      "5º Passe",
+      "6º Passe",
+      "7º Passe",
+      "8º Passe",
+      "12º Passe",
+      "31º Passe"
+    ]
+  },
+  "emotes": {
+    "icon": "/images/icons/emotes1.png",
+    "items": [
+      "Bandeirão",
+      "Flexão",
+      "Galinha",
+      "Egipcio",
+      "Rendenção"
+    ]
+  },
+  "armasEvolutivas": {
+    "icon": "/images/icons/evolutiva1.png",
+    "items": [
+      "AK-47 Dragão Flamejante ",
+      "MP40 Cobra Venenosa ",
+      "UMP Dia do Booyah",
+      "M1014 Dragão Esmeralda",
+      "SCAR Megalodonte",
+      "XM8 Trovão Guardião",
+      "MP5 Fascínio Dourado"
+    ]
+  },
+  "punhos": {
+    "icon": "/images/icons/punhos1.png",
+    "items": [
+      "Punho Congelante",
+      "Punho Ardente ",
+      "Punho do Trovão",
+      "Punho Nocauteador ",
+      "Punho Hiperlivro Dragão"
+    ]
+  },
+  "incubadoras": {
+    "icon": "/images/icons/incubadora1.png",
+    "items": [
+      "Incubadora Galáxia",
+      "Sombra Marinha",
+      "Sombra Roxa"
+    ]
+  }
+}
