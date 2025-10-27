@@ -9,7 +9,6 @@
       "Anjo Verde",
       "Barbinha",
       "Aventureiro",
-      "Cabelo Fitinha",
       "Jaqueta Beta",
       "Cabelo Rosa",
       "Calça Jazz",
@@ -18,7 +17,10 @@
       "Gola Alta Branca",
       "Tênis Angelical",
       "Dunk Master",
-      "Mestre S7"
+      "Mestres antigos",
+      "Mochila 8BITS",
+      "Jaqueta ASUS",
+      "Coelhão"
     ]
   },
   "parcerias": {
@@ -28,6 +30,9 @@
       "Pijama Saitama",
       "Guenos",
       "Attack on Titãs",
+      "Bluelock",
+      "NARUTO FULL 1 CPTL",
+      "NARUTO FULL 2 CPTL",
       "Poring"
     ]
   },
@@ -55,25 +60,26 @@
       "Flexão",
       "Galinha",
       "Egipcio",
-      "Rendenção"
+      "Rendenção",
+      "Poses",
+      "Animação de entrada"
     ]
   },
   "armasEvolutivas": {
     "icon": "/images/icons/evolutiva1.png",
     "items": [
-      "AK-47 Dragão Flamejante ",
-      "MP40 Cobra Venenosa ",
-      "UMP Dia do Booyah",
-      "M1014 Dragão Esmeralda",
-      "SCAR Megalodonte",
-      "XM8 Trovão Guardião",
-      "MP5 Fascínio Dourado"
+      "1-3",
+      "3-5",
+      "5-7",
+      "7-10",
+      "+10"
     ]
   },
   "punhos": {
     "icon": "/images/icons/punhos1.png",
     "items": [
       "Punho Congelante",
+      "Punho Cobra",
       "Punho Ardente ",
       "Punho do Trovão",
       "Punho Nocauteador ",
@@ -85,7 +91,8 @@
     "items": [
       "Incubadora Galáxia",
       "Sombra Marinha",
-      "Sombra Roxa"
+      "Nobres Samurais",
+      "Fitinhas"
     ]
   }
 }
