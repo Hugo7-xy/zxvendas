@@ -110,18 +110,58 @@ header p { margin: 0; font-size: 0.9rem; color: #f3d999; }
 .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
 .product-card { background: rgba(27, 18, 10, 0.85); border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.5); display: flex; flex-direction: column; transition: transform 0.3s, box-shadow 0.3s; border: 1px solid #8b6c43; }
 .product-card:hover { transform: translateY(-5px); box-shadow: 0 6px 18px rgba(200, 166, 100, 0.3); }
-.product-card iframe { width: 100%; height: 180px; border-bottom: 2px solid #c8a664; }
+
+/* Estilo para vídeos e placeholders - ALTERADO */
+.product-card iframe { /* Mantém altura fixa para YouTube */
+    width: 100%;
+    height: 180px;
+    border-bottom: 2px solid #c8a664;
+}
+.product-card video { /* USA ASPECT-RATIO para Discord */
+    width: 100%;
+    /* height: 180px; */ /* REMOVIDO */
+    aspect-ratio: 16 / 9; /* ADICIONADO - Mantém proporção 16:9 */
+    border-bottom: 2px solid #c8a664;
+    background-color: #000;
+    object-fit: cover; /* Mantém cover para preencher se necessário */
+    display: block; /* Garante que não haja espaço extra abaixo */
+}
+.video-placeholder { /* Sem alterações, mas listado para contexto */
+    width: 100%;
+    height: 180px;
+    border-bottom: 2px solid #c8a664;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 1rem;
+    color: #c8a664;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Conteúdo do Card - ALTERADO */
 .card-content { padding: 1rem; display: flex; flex-direction: column; flex-grow: 1; }
-.card-content h3 { margin-bottom: 0.5rem; color: #c8a664; }
-.card-content .description { font-size: 0.9rem; color: #f3d999; margin-bottom: 1rem; flex-grow: 1; }
-.card-content .price { font-size: 1.4rem; font-weight: 700; color: #c8a664; margin-bottom: 1rem; }
+.card-content h3 {
+    margin-bottom: 0.3rem; /* REDUZIDO de 0.5rem */
+    color: #c8a664;
+}
+.card-content .description {
+    font-size: 0.9rem;
+    color: #f3d999;
+    margin-bottom: 0.6rem; /* REDUZIDO de 1rem */
+    flex-grow: 1;
+}
+.card-content .price {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #c8a664;
+    margin-bottom: 0.8rem; /* REDUZIDO de 1rem */
+}
 .whatsapp-button { display: block; background-color: #25D366; color: #fff; text-align: center; padding: 0.8rem; border-radius: 5px; text-decoration: none; font-weight: 600; transition: all 0.3s; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); }
 .whatsapp-button:hover { background-color: #1EBE57; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); }
 .whatsapp-button i { margin-right: 0.5rem; }
-
-/* Estilo para vídeos (Discord MP4) */
-.product-card video { width: 100%; height: 180px; border-bottom: 2px solid #c8a664; background-color: #000; object-fit: cover; }
-.video-placeholder { width: 100%; height: 180px; border-bottom: 2px solid #c8a664; background: #000; display: flex; justify-content: center; align-items: center; text-align: center; padding: 1rem; color: #c8a664; font-weight: 600; font-size: 0.9rem; }
 
 /* Página de Canais e Referências */
 .channels-container, .references-container, .dashboard-container, .settings-container { /* Adicionado .settings-container */
@@ -432,7 +472,8 @@ header p { margin: 0; font-size: 0.9rem; color: #f3d999; }
 
 /* Feedback dentro das páginas */
 #user-settings-feedback,
-#user-security-feedback {
+#user-security-feedback,
+#update-password-feedback { /* Adicionado feedback de update password */
     min-height: 1.2em;
     font-weight: 600;
     text-align: center; /* Centraliza feedback */
