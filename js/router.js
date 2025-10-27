@@ -4,16 +4,18 @@ import { setActiveLink } from './systemamenu.js';
 import { closeFilterPanel } from './ui.js';
 // NOVO: Importa funções do settings para carregar dados na página
 import { loadProfileData, setupSecurityPage } from './systemasettings.js';
+// --- ADICIONE ESTAS IMPORTAÇÕES ---
+import { loadChannelData } from './systemacanais.js'; // Importa função de carregar canais
+import { loadReferences } from './systemareferencias.js'; // Importa função de carregar referências
+// --- FIM ADIÇÕES ---
 
 const routes = {
     '/': 'products-page',
     '/vendedores': 'sellers-page',
-    '/canais': 'channels-page',
-    '/referencias': 'references-page',
-    // --- NOVAS ROTAS ---
-    '/settings/profile': 'settings-profile-page', // <-- Página de perfil
-    '/settings/security': 'settings-security-page' // <-- Página de segurança
-    // --- FIM NOVAS ROTAS ---
+    '/canais': 'channels-page', // <-- Página de canais
+    '/referencias': 'references-page', // <-- Página de referências
+    '/settings/profile': 'settings-profile-page',
+    '/settings/security': 'settings-security-page'
 };
 
 export let currentSellerFilterId = null;
@@ -24,87 +26,167 @@ let backToSellersBtn = null;
 let sellerProductsHeader = null;
 let sellerProductsTitle = null;
 
-export function isFilterFabVisible() { /* ... (código existente sem mudanças) ... */ const isMobile = window.innerWidth <= 768; return (currentPageId === 'products-page' && isMobile); }
-function updateFilterFabVisibility() { /* ... (código existente sem mudanças) ... */ if (!filterFab) return; if (isFilterFabVisible()) { const filterPanel = document.getElementById('filter-side-panel'); if (!filterPanel || !filterPanel.classList.contains('is-open')) { filterFab.style.display = 'flex'; } else { filterFab.style.display = 'none'; } } else { filterFab.style.display = 'none'; } }
+// Verifica se o FAB de filtro deve estar visível (apenas mobile na página de produtos)
+export function isFilterFabVisible() {
+    const isMobile = window.innerWidth <= 768;
+    return (currentPageId === 'products-page' && isMobile && !currentSellerFilterId); // Adicionado !currentSellerFilterId
+}
 
+// Atualiza a visibilidade do FAB de filtro
+function updateFilterFabVisibility() {
+    if (!filterFab) return;
+    if (isFilterFabVisible()) {
+        const filterPanel = document.getElementById('filter-side-panel');
+        // Mostra o FAB apenas se o painel lateral NÃO estiver aberto
+        if (!filterPanel || !filterPanel.classList.contains('is-open')) {
+            filterFab.style.display = 'flex';
+        } else {
+            filterFab.style.display = 'none'; // Esconde se o painel abrir
+        }
+    } else {
+        filterFab.style.display = 'none'; // Esconde em outras páginas ou desktop
+    }
+}
+
+
+// Função principal que lida com a mudança de rota
 export function handleRouteChange() {
-    closeFilterPanel();
+    closeFilterPanel(); // Fecha painel de filtro ao mudar de rota
     const path = window.location.pathname;
     const allPages = document.querySelectorAll('.page-content');
+
+    // Esconde todas as páginas primeiro
     allPages.forEach(page => page.classList.add('hidden'));
 
-    currentPageId = null;
+    // Reseta filtros de vendedor
+    currentPageId = null; // Reseta a página atual
     currentSellerFilterId = null;
     currentSellerFilterName = null;
 
-    if (!sellerProductsHeader) { /* ... (código existente sem mudanças para pegar refs header/btn/title) ... */ sellerProductsHeader = document.getElementById('seller-products-header'); backToSellersBtn = document.getElementById('back-to-sellers-btn'); sellerProductsTitle = document.getElementById('seller-products-title'); if (backToSellersBtn) { backToSellersBtn.addEventListener('click', (e) => { e.preventDefault(); navigate('/vendedores'); }); } }
-
-    if (path.startsWith('/vendedores/')) {
-        // --- Lógica de perfil de vendedor (sem mudanças) ---
-        const sellerIdFromState = history.state?.sellerId; const sellerNameFromUrl = decodeURIComponent(path.split('/vendedores/')[1]);
-        if (sellerIdFromState) {
-            currentPageId = routes['/']; currentSellerFilterId = sellerIdFromState; currentSellerFilterName = history.state?.sellerName || sellerNameFromUrl;
-            if (sellerProductsHeader) sellerProductsHeader.classList.remove('hidden'); if (sellerProductsTitle) sellerProductsTitle.textContent = `Contas de ${currentSellerFilterName}`;
-            document.dispatchEvent(new CustomEvent('sellerSelected', { detail: { sellerId: currentSellerFilterId } }));
-            produtos.fetchAndRenderProducts({ type: 'seller', value: currentSellerFilterId });
-        } else {
-             currentPageId = routes['/vendedores']; if (sellerProductsHeader) sellerProductsHeader.classList.add('hidden'); console.warn(`Seller ID not found for ${sellerNameFromUrl}.`);
+    // Pega referências do cabeçalho de produtos do vendedor (se ainda não pegou)
+    if (!sellerProductsHeader) {
+        sellerProductsHeader = document.getElementById('seller-products-header');
+        backToSellersBtn = document.getElementById('back-to-sellers-btn');
+        sellerProductsTitle = document.getElementById('seller-products-title');
+        // Adiciona listener ao botão "Voltar" uma única vez
+        if (backToSellersBtn) {
+            backToSellersBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigate('/vendedores'); // Navega de volta para a lista de vendedores
+            });
         }
-        // --- Fim lógica vendedor ---
+    }
+
+    // Verifica se é uma URL de perfil de vendedor (/vendedores/nome-do-vendedor)
+    if (path.startsWith('/vendedores/')) {
+        // Tenta obter o ID do vendedor do estado do histórico (passado via navigate)
+        const sellerIdFromState = history.state?.sellerId;
+        const sellerNameFromUrl = decodeURIComponent(path.split('/vendedores/')[1]); // Pega nome da URL
+
+        if (sellerIdFromState) {
+            currentPageId = routes['/']; // Mostra a página de produtos
+            currentSellerFilterId = sellerIdFromState; // Define o ID do vendedor para filtrar
+            currentSellerFilterName = history.state?.sellerName || sellerNameFromUrl; // Usa nome do estado ou da URL
+
+            // Mostra o cabeçalho específico e atualiza o título
+            if (sellerProductsHeader) sellerProductsHeader.classList.remove('hidden');
+            if (sellerProductsTitle) sellerProductsTitle.textContent = `Contas de ${currentSellerFilterName}`;
+
+            // Dispara evento para outros módulos (ex: filtro) saberem que um vendedor foi selecionado
+            document.dispatchEvent(new CustomEvent('sellerSelected', { detail: { sellerId: currentSellerFilterId }}));
+
+            // Busca produtos APENAS deste vendedor
+            produtos.fetchAndRenderProducts({ type: 'seller', value: currentSellerFilterId });
+
+        } else {
+            // Se não encontrou ID no estado (ex: acesso direto à URL sem navegação interna)
+            // Mostra a página de lista de vendedores como fallback
+             console.warn(`Seller ID not found for ${sellerNameFromUrl}. Showing sellers list.`);
+             currentPageId = routes['/vendedores'];
+             if (sellerProductsHeader) sellerProductsHeader.classList.add('hidden'); // Esconde header
+             // Poderia tentar buscar o ID pelo nome aqui, mas é mais complexo e pode falhar
+        }
 
     } else if (routes[path]) {
-        // É uma das rotas principais OU uma das novas rotas de settings
+        // É uma das rotas principais (/, /vendedores, /canais, /referencias) OU uma das novas de settings
         currentPageId = routes[path];
-        if (sellerProductsHeader) sellerProductsHeader.classList.add('hidden'); // Esconde header vendedor
+        if (sellerProductsHeader) sellerProductsHeader.classList.add('hidden'); // Garante que header de vendedor está escondido
 
         // --- AÇÕES ESPECÍFICAS POR PÁGINA ---
         if (path === '/') {
+            // Página inicial de produtos (sem filtro de vendedor)
             produtos.fetchAndRenderProducts({ type: 'price', value: 'all' });
         }
-        // NOVO: Se for a página de perfil, carrega os dados do formulário
+        // --- MODIFICAÇÕES AQUI ---
+        else if (path === '/canais') {
+            loadChannelData(); // Chama a função de carregar canais
+        }
+        else if (path === '/referencias') {
+            loadReferences(); // Chama a função de carregar referências
+        }
+        // --- FIM MODIFICAÇÕES ---
         else if (path === '/settings/profile') {
             loadProfileData(); // Chama a função do systemasettings.js
         }
-        // NOVO: Se for a página de segurança, configura o botão reset
         else if (path === '/settings/security') {
             setupSecurityPage(); // Chama a função do systemasettings.js
         }
-        // Adicionar carregamento de dados para /canais, /referencias, /vendedores se necessário aqui também
+        // Nota: A página /vendedores não precisa de ação aqui, pois systemavendedores.js
+        // usa MutationObserver para carregar quando a página #sellers-page fica visível.
         // --- FIM AÇÕES ---
 
     } else {
-        // Rota não encontrada
+        // Rota não encontrada, redireciona para a página inicial
         currentPageId = routes['/'];
         if (sellerProductsHeader) sellerProductsHeader.classList.add('hidden');
         produtos.fetchAndRenderProducts({ type: 'price', value: 'all' });
         console.warn(`Route not found: ${path}. Showing products page.`);
-        // history.replaceState({}, '', '/'); // Descomentar para redirecionar
+        // Opcional: Descomentar para realmente mudar a URL para /
+        // history.replaceState({}, '', '/');
     }
 
+    // Mostra a página correspondente ao currentPageId
     const targetPage = document.getElementById(currentPageId);
     if (targetPage) {
         targetPage.classList.remove('hidden');
     } else {
+        // Fallback para a página de produtos se a página alvo não for encontrada
         const productsPage = document.getElementById(routes['/']);
         if (productsPage) productsPage.classList.remove('hidden');
         console.error(`Page element with ID "${currentPageId}" not found.`);
     }
 
-    // --- ATUALIZAÇÃO DO LINK ATIVO ---
+    // --- ATUALIZAÇÃO DO LINK ATIVO NA NAVEGAÇÃO ---
     let activeLinkPath = path;
     if (path.startsWith('/vendedores/')) {
+        // Se estiver na página de um vendedor específico, marca a aba "Vendedores" como ativa
         activeLinkPath = '/vendedores';
     } else if (path.startsWith('/settings/')) {
-        // Nenhuma aba da nav principal fica ativa para settings
-        activeLinkPath = null; // <- Nulo para não ativar nenhuma
+        // Nenhuma aba da navegação principal deve ficar ativa para as páginas de configurações
+        activeLinkPath = null; // <- Passa nulo para desativar todas
     }
-    setActiveLink(activeLinkPath); // Passa null se for settings
+    setActiveLink(activeLinkPath); // Atualiza a classe 'active' nos links da nav
     // --- FIM ATUALIZAÇÃO LINK ---
 
-    window.scrollTo(0, 0);
-    updateFilterFabVisibility();
+    window.scrollTo(0, 0); // Rola para o topo da página
+    updateFilterFabVisibility(); // Atualiza visibilidade do FAB
 }
 
-export function navigate(path, state = {}) { /* ... (código existente sem mudanças) ... */ if (window.location.pathname !== path || JSON.stringify(history.state) !== JSON.stringify(state)) { history.pushState(state, '', path); } handleRouteChange(); }
+// Função para navegar programaticamente
+export function navigate(path, state = {}) {
+    // Só adiciona ao histórico se a URL ou o estado realmente mudarem
+    if (window.location.pathname !== path || JSON.stringify(history.state) !== JSON.stringify(state)) {
+        history.pushState(state, '', path);
+    }
+    handleRouteChange(); // Chama a função para processar a nova rota
+}
+
+// Ouve o evento 'popstate' (botões voltar/avançar do navegador)
 window.addEventListener('popstate', handleRouteChange);
-document.addEventListener('DOMContentLoaded', () => { filterFab = document.getElementById('open-filter-btn'); handleRouteChange(); window.addEventListener('resize', updateFilterFabVisibility); });
+
+// Ouve o carregamento inicial do DOM
+document.addEventListener('DOMContentLoaded', () => {
+    filterFab = document.getElementById('open-filter-btn'); // Pega referência do FAB
+    handleRouteChange(); // Processa a rota inicial
+    window.addEventListener('resize', updateFilterFabVisibility); // Atualiza FAB no resize
+});
