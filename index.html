@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZX STORE</title> <link rel="stylesheet" href="/css/style.css">
-    <link rel="icon" type="image/x-icon" href="/favicon.jpg"> <link rel="preconnect" href="https://fonts.googleapis.com">
+    <title>ZX STORE</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.jpg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
 </head>
 <body>
@@ -19,7 +20,8 @@
         <div class="header-content">
             <div class="logo-area">
                 <h1>ZX Store</h1>
-                <p>As melhores contas, com os melhores vendedores.</p> </div>
+                <p>As melhores contas, com os melhores vendedores.</p>
+            </div>
             <div class="header-actions">
                 <button id="open-menu-btn" class="menu-btn">
                     <span id="user-icon-placeholder" class="user-icon">
@@ -70,29 +72,31 @@
                         </button>
                     </li>
                     <li class="filter-title">Valores</li>
-    <li> <a href="#" data-filter-type="price" data-filter-value="150-299.99">R$ 150 - 300</a> </li>
-    <li> <a href="#" data-filter-type="price" data-filter-value="300-499.99">R$ 300 - 500</a> </li>
-    <li> <a href="#" data-filter-type="price" data-filter-value="500-799.99">R$ 500 - 800</a> </li>
-    <li> <a href="#" data-filter-type="price" data-filter-value="800+">Acima de R$ 800</a> </li>
-</ul>
+                    <li> <a href="#" data-filter-type="price" data-filter-value="150-299.99">R$ 150 - 300</a> </li>
+                    <li> <a href="#" data-filter-type="price" data-filter-value="300-499.99">R$ 300 - 500</a> </li>
+                    <li> <a href="#" data-filter-type="price" data-filter-value="500-799.99">R$ 500 - 800</a> </li>
+                    <li> <a href="#" data-filter-type="price" data-filter-value="800+">Acima de R$ 800</a> </li>
+                </ul>
             </aside>
 
             <main class="product-grid-wrapper">
-            <div id="seller-products-header" class="seller-products-header hidden">
-                 <button id="back-to-sellers-btn" class="back-button">
-                     <i class="fas fa-arrow-left"></i> Voltar para Vendedores
-                 </button>
-                 <h2 id="seller-products-title"></h2> </div>
-            <div id="product-grid" class="product-grid">
+                <div id="seller-products-header" class="seller-products-header hidden">
+                     <button id="back-to-sellers-btn" class="back-button">
+                         <i class="fas fa-arrow-left"></i> Voltar para Vendedores
+                     </button>
+                     <h2 id="seller-products-title"></h2>
                 </div>
-        </main>
+                <div id="product-grid" class="product-grid">
+                    </div>
+            </main>
         </div>
     </section>
 
     <section id="sellers-page" class="page-content hidden">
         <div class="sellers-container">
             <h1>Nossos Vendedores Verificados</h1>
-            <p>conheça os vendedores confiaveis da nossa plataforma.</p> <div id="sellers-grid" class="sellers-grid">
+            <p>Conheça os vendedores confiáveis da nossa plataforma.</p>
+            <div id="sellers-grid" class="sellers-grid">
                 </div>
         </div>
     </section>
@@ -101,8 +105,10 @@
         <div class="channels-container">
             <h1>Nossos Canais Oficiais</h1>
             <p>Entre em nossos grupos para ficar por dentro das novidades e receber as melhores ofertas.</p>
-            <div class="main-channels"></div> <h2>Grupos de WhatsApp por Franquia</h2>
-            <div class="accordion"></div> </div>
+            <div class="main-channels"></div>
+            <h2>Grupos de WhatsApp por Franquia</h2>
+            <div class="accordion"></div>
+        </div>
     </section>
 
     <section id="references-page" class="page-content hidden">
@@ -113,6 +119,49 @@
                 </div>
         </div>
     </section>
+
+    <section id="settings-profile-page" class="page-content hidden">
+        <div class="settings-container"> <h1>Configurações da Conta</h1>
+            <nav class="settings-nav">
+                <a href="/settings/profile" class="settings-nav-link active">Perfil</a>
+                <a href="/settings/security" class="settings-nav-link">Segurança</a>
+            </nav>
+            <div class="settings-content">
+                <h2>Editar Perfil</h2>
+                <form id="user-settings-form">
+                    <div class="form-group">
+                        <label for="user-settings-name">Nome:</label>
+                        <input type="text" id="user-settings-name" required placeholder="Seu nome de exibição">
+                    </div>
+                    <div class="form-group">
+                        <label for="user-settings-phone">Telefone WhatsApp (com 55 e DDD):</label>
+                        <input type="tel" id="user-settings-phone" required placeholder="5571999998888">
+                    </div>
+                    <button type="submit" class="btn-login">Salvar Alterações</button>
+                    <div id="user-settings-feedback" style="margin-top: 1rem; text-align: center; min-height: 1.2em;"></div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <section id="settings-security-page" class="page-content hidden">
+        <div class="settings-container">
+             <h1>Configurações da Conta</h1>
+             <nav class="settings-nav">
+                 <a href="/settings/profile" class="settings-nav-link">Perfil</a>
+                 <a href="/settings/security" class="settings-nav-link active">Segurança</a>
+             </nav>
+             <div class="settings-content">
+                 <h2>Segurança da Conta</h2>
+                 <p>Gerencie as opções de segurança da sua conta.</p>
+                 <button id="reset-password-btn" class="dashboard-btn settings-btn" style="width: 100%; margin-top: 1rem;">
+                     <i class="fas fa-key"></i> Redefinir Senha por E-mail
+                 </button>
+                 <div id="user-security-feedback" style="margin-top: 1rem; text-align: center; min-height: 1.2em;"></div>
+             </div>
+        </div>
+    </section>
+
 
     <div id="seller-dashboard-modal" class="modal-overlay hidden">
         <div class="modal-content modal-content-tabs">
@@ -141,7 +190,7 @@
                     <li>
                         <button class="dashboard-menu-item" data-target="panel-settings">
                             <i class="fas fa-user-edit"></i>
-                            <span class="dashboard-menu-text">Configurações do Perfil</span>
+                            <span class="dashboard-menu-text">Configurações do Perfil (Vendedor)</span>
                         </button>
                     </li>
                 </ul>
@@ -150,7 +199,7 @@
                 <div id="panel-admin" class="dashboard-panel hidden"><div class="dashboard-section"><h2><i class="fas fa-users-cog"></i> Gerenciar Vendedores</h2><p>Adicione ou remova vendedores do sistema.</p><div id="admin-seller-list" class="vendor-product-list"></div><button id="show-add-seller-modal-btn" class="dashboard-btn add-btn" style="margin-top: 1.5rem;"><i class="fas fa-user-plus"></i> Adicionar Novo Vendedor</button></div></div>
                 <div id="panel-products" class="dashboard-panel"><div class="dashboard-section"><h2><i class="fas fa-shopping-cart"></i> Gerenciar Produtos</h2><p>Adicione, edite ou exclua os anúncios de suas contas.</p><div id="vendor-product-list" class="vendor-product-list"></div><button class="dashboard-btn add-btn"><i class="fas fa-plus-circle"></i> Adicionar Nova Conta</button></div></div>
                 <div id="panel-references" class="dashboard-panel hidden"><div class="dashboard-section"><h2><i class="fas fa-plus-circle"></i> Adicionar Nova Referência</h2><p>Faça o upload dos prints de clientes satisfeitos.</p><form id="add-reference-form"><div class="form-group"><label for="ref-image">Selecione o print:</label><input type="file" id="ref-image" name="ref-image" accept="image/png, image/jpeg" required><label for="ref-image" class="file-input-label"><i class="fas fa-upload"></i> Escolher Arquivo</label><span id="file-name-display">Nenhum arquivo selecionado</span></div><button type="submit" class="dashboard-btn"><i class="fas fa-plus-circle"></i> Adicionar Referência</button></form></div><div class="dashboard-section" style="margin-top: 2rem; border-top: 1px solid #4e3d2c; padding-top: 2rem;"><h2><i class="fas fa-list-ul"></i> Suas Referências Enviadas</h2><div id="vendor-references-list" class="vendor-references-list"></div></div></div>
-                <div id="panel-settings" class="dashboard-panel hidden"><div class="dashboard-section"><h2><i class="fas fa-user-edit"></i> Configurações do Perfil</h2><p>Atualize sua foto, nome, WhatsApp e Instagram.</p><button id="edit-profile-btn" class="dashboard-btn settings-btn"><i class="fas fa-cog"></i> Editar Perfil</button></div></div>
+                <div id="panel-settings" class="dashboard-panel hidden"><div class="dashboard-section"><h2><i class="fas fa-user-edit"></i> Configurações do Perfil (Vendedor)</h2><p>Atualize sua foto, nome, WhatsApp e Instagram.</p><button id="edit-profile-btn" class="dashboard-btn settings-btn"><i class="fas fa-cog"></i> Editar Perfil (Vendedor)</button></div></div>
             </div>
         </div>
     </div>
@@ -168,7 +217,9 @@
     <div id="confirm-modal" class="modal-overlay hidden"><div class="modal-content confirm-dialog"><h2 id="confirm-title">Confirmar Ação</h2><p id="confirm-message">Você tem certeza que deseja continuar?</p><div class="confirm-buttons"><button id="confirm-no-btn" class="btn-confirm btn-cancel">Cancelar</button><button id="confirm-yes-btn" class="btn-confirm btn-danger">Confirmar</button></div></div></div>
 
     <div id="terms-modal" class="modal-overlay hidden"><div class="modal-content"><span class="close-btn-terms close-btn">&times;</span><h2>TERMO DE COMPRA E RESPONSABILIDADE</h2><div class="terms-content" style="text-align: left; max-height: 60vh; overflow-y: auto; padding-right: 15px;"><p>Pelo presente instrumento particular, o COMPRADOR declara estar ciente e de acordo com as condições abaixo ao adquirir uma conta de jogo na plataforma da ZX Vendas LTDA ("Loja'):</p><h4>1. Idade Mínima</h4><p><strong>1.1.</strong> A compra é exclusivamente permitida para maiores de 18 anos.</p><p><strong>1.2.</strong> Ao prosseguir com a aquisição, o COMPRADOR declara ser maior de idade e estar plenamente capaz de assumir obrigações civis.</p><h4>2. Natureza da Negociação</h4><p><strong>2.1.</strong> O COMPRADOR reconhece que a venda de contas não possui vínculo oficial com as desenvolvedoras dos jogos (ex.: Garena Free Fire, Riot Games, etc.).</p><p><strong>2.2.</strong> A negociação é realizada de forma privada, entre Loja e COMPRADOR.</p><h4>3. Garantia da Loja</h4><p><strong>3.1.</strong> A Loja se compromete a entregar a conta com:</p><ul style="list-style-position: inside; padding-left: 1rem;"><li>Dados corretos de login (e-mail e senha);</li><li>Acesso funcional no momento da entrega.</li></ul><p><strong>3.2.</strong> A Loja oferece garantia de 15 (quinze) dias a partir da data de entrega da conta, cobrindo problemas relacionados ao acesso e autenticidade da conta fornecida.</p><p><strong>3.3.</strong> Durante o período de garantia, o COMPRADOR terá direito a suporte da Loja para resolução de eventuais problemas de acesso ou dúvidas relacionadas à conta adquirida.</p><p><strong>3.4.</strong> Está expressamente proibido mexer no login da conta durante os 15 (quinze) dias de garantia, incluindo, mas não se limitando a: alteração de senha, troca ou cancelamento de configurações de e-mail, ou qualquer modificação de segurança vinculada à conta. Alterações só poderão ser realizadas após a conclusão do prazo de garantia.</p><p><strong>3.5.</strong> Após o prazo de 15 (quinze) dias, a Loja não se responsabiliza por problemas posteriores, ficando o uso da conta sob total responsabilidade do COMPRADOR.</p><h4>4. Privacidade</h4><p><strong>4.1.</strong> Todos os dados fornecidos pelo COMPRADOR serão mantidos em sigilo e utilizados apenas para a efetivação da venda.</p><h4>5. Suporte</h4><p><strong>5.1.</strong> Durante o período de garantia, o COMPRADOR poderá entrar em contato com a Loja pelos seguintes canais oficiais de suporte:</p><ul style="list-style-position: inside; padding-left: 1rem;"><li>WhatsApp: (11) 91066-7206</li><li>WhatsApp: (85) 99405-4666</li><li>E-mail: zxsuporte9@gmail.com</li></ul><p><strong>5.2.</strong> O atendimento será realizado em horário comercial e dentro do prazo máximo de 48 horas úteis após a abertura da solicitação.</p><h4>6. Aceite</h4><p><strong>6.1.</strong> Ao finalizar a compra, o COMPRADOR confirma que:</p><ul style="list-style-position: inside; padding-left: 1rem;"><li>Leu e compreendeu todos os termos deste contrato;</li><li>Concorda integralmente com as condições aqui estabelecidas.</li></ul><br><p>Local e Data</p><p>Assinatura do Comprador</p></div></div></div>
+
     <div id="item-filter-modal" class="modal-overlay hidden"><div class="modal-content modal-content-filter modal-filter-layout"><span class="close-btn-filter close-btn">&times;</span><div id="item-filter-tab-menu" class="filter-tab-menu"></div><div class="filter-content-area"><h2><i class="fas fa-filter"></i> Filtrar por Itens Raros</h2><p>Selecione um ou mais itens para ver as contas que possuem <strong>todos</strong> eles.</p><h4 id="item-filter-category-subtitle" class="filter-category-subtitle">Populares</h4><div id="item-filter-modal-grid" class="item-filter-grid"></div><div class="filter-modal-actions"><button id="clear-item-filter-btn" class="dashboard-btn settings-btn"><i class="fas fa-times"></i> Limpar (Ver Todas)</button><button id="apply-item-filter-btn" class="dashboard-btn add-btn"><i class="fas fa-check"></i> Aplicar Filtro</button></div></div></div></div>
+
     <aside id="filter-side-panel" class="filter-side-panel">
         <div class="panel-header filter-panel-header">
             <h3>Filtros</h3>
@@ -180,12 +231,11 @@
                 <li class="filter-title-item">FILTRO POR ITEM</li>
                 <li><button id="open-item-filter-sidebar-mobile" class="open-item-filter-btn-sidebar"><i class="fas fa-filter"></i> Selecionar Itens Raros</button></li>
                 <li class="filter-title">Valores</li>
-                <li class="filter-title">Valores</li>
-    <li> <a href="#" data-filter-type="price" data-filter-value="150-299.99">R$ 150 - 300</a> </li>
-    <li> <a href="#" data-filter-type="price" data-filter-value="300-499.99">R$ 300 - 500</a> </li>
-    <li> <a href="#" data-filter-type="price" data-filter-value="500-799.99">R$ 500 - 800</a> </li>
-    <li> <a href="#" data-filter-type="price" data-filter-value="800+">Acima de R$ 800</a> </li>
-</ul>
+                <li> <a href="#" data-filter-type="price" data-filter-value="150-299.99">R$ 150 - 300</a> </li>
+                <li> <a href="#" data-filter-type="price" data-filter-value="300-499.99">R$ 300 - 500</a> </li>
+                <li> <a href="#" data-filter-type="price" data-filter-value="500-799.99">R$ 500 - 800</a> </li>
+                <li> <a href="#" data-filter-type="price" data-filter-value="800+">Acima de R$ 800</a> </li>
+            </ul>
         </div>
     </aside>
 
@@ -197,7 +247,8 @@
         </div>
     </aside>
 
-    <div id="panel-overlay" class="panel-overlay hidden"></div> <div id="loading-overlay" class="loading-overlay hidden"><div class="spinner"></div></div>
+    <div id="panel-overlay" class="panel-overlay hidden"></div>
+    <div id="loading-overlay" class="loading-overlay hidden"><div class="spinner"></div></div>
     <div id="toast-container"></div>
 
     <script type="module" src="/js/app.js"></script>
