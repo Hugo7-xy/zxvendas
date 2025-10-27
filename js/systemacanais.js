@@ -15,7 +15,7 @@ export function init(dependencies) {
             // Se o menu.js já usa o router, a navegação ocorrerá lá.
             // Aqui, apenas garantimos que o carregamento aconteça na primeira vez.
             if (!hasLoaded) {
-                loadChannelData();
+                loadChannelData(); // <<< Chamada interna ainda funciona
             }
             // Não prevenimos o default nem navegamos aqui,
             // deixamos o systemamenu.js/router.js cuidarem disso.
@@ -31,7 +31,7 @@ export function init(dependencies) {
                      const isHidden = channelsPage.classList.contains('hidden');
                      // Se a página ficou visível E ainda não carregou os dados
                      if (!isHidden && !hasLoaded) {
-                         loadChannelData();
+                         loadChannelData(); // <<< Chamada interna ainda funciona
                      }
                  }
              });
@@ -49,8 +49,9 @@ export function init(dependencies) {
 
 /**
  * Busca os dados do arquivo 'public/data/channels.json' e renderiza o HTML
+ * <<< ADICIONE O 'export' AQUI >>>
  */
-async function loadChannelData() {
+export async function loadChannelData() {
     // Evita recarregar se já carregou ou se está em processo (caso haja múltiplos cliques rápidos)
     if (hasLoaded) return;
     hasLoaded = true; // Marca como carregado (ou tentando carregar)
