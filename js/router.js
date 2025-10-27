@@ -2,16 +2,17 @@
 import * as produtos from './systemaprodutos.js';
 import { setActiveLink } from './systemamenu.js';
 import { closeFilterPanel } from './ui.js';
-// NOVO: Importa funções do settings para carregar dados na página
+// Importa funções do settings para carregar dados na página
 import { loadProfileData, setupSecurityPage } from './systemasettings.js';
-// --- ADICIONE ESTAS IMPORTAÇÕES ---
+// Importa funções de carregamento das outras páginas
 import { loadChannelData } from './systemacanais.js'; // Importa função de carregar canais
 import { loadReferences } from './systemareferencias.js'; // Importa função de carregar referências
-// --- FIM ADIÇÕES ---
+// Importa a função de renderizar vendedores e a de resetar a flag
+import { renderSellersGallery, resetRenderFlag as resetSellersRenderFlag } from './systemavendedores.js';
 
 const routes = {
     '/': 'products-page',
-    '/vendedores': 'sellers-page',
+    '/vendedores': 'sellers-page', // <-- Página de vendedores
     '/canais': 'channels-page', // <-- Página de canais
     '/referencias': 'references-page', // <-- Página de referências
     '/settings/profile': 'settings-profile-page',
@@ -26,11 +27,13 @@ let backToSellersBtn = null;
 let sellerProductsHeader = null;
 let sellerProductsTitle = null;
 
-// Verifica se o FAB de filtro deve estar visível (apenas mobile na página de produtos)
+// Verifica se o FAB de filtro deve estar visível (apenas mobile na página de produtos, sem filtro de vendedor)
 export function isFilterFabVisible() {
     const isMobile = window.innerWidth <= 768;
-    return (currentPageId === 'products-page' && isMobile && !currentSellerFilterId); // Adicionado !currentSellerFilterId
+    // O FAB só aparece na página principal de produtos E em mobile E se não houver filtro de vendedor ativo
+    return (currentPageId === 'products-page' && isMobile && !currentSellerFilterId);
 }
+
 
 // Atualiza a visibilidade do FAB de filtro
 function updateFilterFabVisibility() {
@@ -44,7 +47,7 @@ function updateFilterFabVisibility() {
             filterFab.style.display = 'none'; // Esconde se o painel abrir
         }
     } else {
-        filterFab.style.display = 'none'; // Esconde em outras páginas ou desktop
+        filterFab.style.display = 'none'; // Esconde em outras páginas, desktop ou se houver filtro de vendedor
     }
 }
 
@@ -58,8 +61,11 @@ export function handleRouteChange() {
     // Esconde todas as páginas primeiro
     allPages.forEach(page => page.classList.add('hidden'));
 
-    // Reseta filtros de vendedor
-    currentPageId = null; // Reseta a página atual
+    // Reseta a flag de renderização dos vendedores sempre que a rota muda
+    resetSellersRenderFlag();
+
+    // Reseta filtros e página atual
+    currentPageId = null;
     currentSellerFilterId = null;
     currentSellerFilterName = null;
 
@@ -79,60 +85,53 @@ export function handleRouteChange() {
 
     // Verifica se é uma URL de perfil de vendedor (/vendedores/nome-do-vendedor)
     if (path.startsWith('/vendedores/')) {
-        // Tenta obter o ID do vendedor do estado do histórico (passado via navigate)
         const sellerIdFromState = history.state?.sellerId;
-        const sellerNameFromUrl = decodeURIComponent(path.split('/vendedores/')[1]); // Pega nome da URL
+        const sellerNameFromUrl = decodeURIComponent(path.split('/vendedores/')[1]);
 
         if (sellerIdFromState) {
             currentPageId = routes['/']; // Mostra a página de produtos
-            currentSellerFilterId = sellerIdFromState; // Define o ID do vendedor para filtrar
-            currentSellerFilterName = history.state?.sellerName || sellerNameFromUrl; // Usa nome do estado ou da URL
+            currentSellerFilterId = sellerIdFromState;
+            currentSellerFilterName = history.state?.sellerName || sellerNameFromUrl;
 
-            // Mostra o cabeçalho específico e atualiza o título
             if (sellerProductsHeader) sellerProductsHeader.classList.remove('hidden');
             if (sellerProductsTitle) sellerProductsTitle.textContent = `Contas de ${currentSellerFilterName}`;
 
-            // Dispara evento para outros módulos (ex: filtro) saberem que um vendedor foi selecionado
             document.dispatchEvent(new CustomEvent('sellerSelected', { detail: { sellerId: currentSellerFilterId }}));
-
-            // Busca produtos APENAS deste vendedor
             produtos.fetchAndRenderProducts({ type: 'seller', value: currentSellerFilterId });
 
         } else {
-            // Se não encontrou ID no estado (ex: acesso direto à URL sem navegação interna)
-            // Mostra a página de lista de vendedores como fallback
              console.warn(`Seller ID not found for ${sellerNameFromUrl}. Showing sellers list.`);
-             currentPageId = routes['/vendedores'];
-             if (sellerProductsHeader) sellerProductsHeader.classList.add('hidden'); // Esconde header
-             // Poderia tentar buscar o ID pelo nome aqui, mas é mais complexo e pode falhar
+             currentPageId = routes['/vendedores']; // Fallback para a lista de vendedores
+             if (sellerProductsHeader) sellerProductsHeader.classList.add('hidden');
+             renderSellersGallery(); // Tenta renderizar a lista de vendedores como fallback
         }
 
     } else if (routes[path]) {
-        // É uma das rotas principais (/, /vendedores, /canais, /referencias) OU uma das novas de settings
+        // É uma das rotas definidas no objeto 'routes'
         currentPageId = routes[path];
         if (sellerProductsHeader) sellerProductsHeader.classList.add('hidden'); // Garante que header de vendedor está escondido
 
-        // --- AÇÕES ESPECÍFICAS POR PÁGINA ---
-        if (path === '/') {
-            // Página inicial de produtos (sem filtro de vendedor)
-            produtos.fetchAndRenderProducts({ type: 'price', value: 'all' });
+        // --- AÇÕES ESPECÍFICAS POR ROTA ---
+        switch (path) {
+            case '/':
+                produtos.fetchAndRenderProducts({ type: 'price', value: 'all' });
+                break;
+            case '/vendedores':
+                 renderSellersGallery(); // Chama a função de carregar/renderizar vendedores
+                 break;
+            case '/canais':
+                loadChannelData(); // Chama a função de carregar canais
+                break;
+            case '/referencias':
+                loadReferences(); // Chama a função de carregar referências
+                break;
+            case '/settings/profile':
+                loadProfileData(); // Chama a função do systemasettings.js
+                break;
+            case '/settings/security':
+                setupSecurityPage(); // Chama a função do systemasettings.js
+                break;
         }
-        // --- MODIFICAÇÕES AQUI ---
-        else if (path === '/canais') {
-            loadChannelData(); // Chama a função de carregar canais
-        }
-        else if (path === '/referencias') {
-            loadReferences(); // Chama a função de carregar referências
-        }
-        // --- FIM MODIFICAÇÕES ---
-        else if (path === '/settings/profile') {
-            loadProfileData(); // Chama a função do systemasettings.js
-        }
-        else if (path === '/settings/security') {
-            setupSecurityPage(); // Chama a função do systemasettings.js
-        }
-        // Nota: A página /vendedores não precisa de ação aqui, pois systemavendedores.js
-        // usa MutationObserver para carregar quando a página #sellers-page fica visível.
         // --- FIM AÇÕES ---
 
     } else {
@@ -163,7 +162,7 @@ export function handleRouteChange() {
         activeLinkPath = '/vendedores';
     } else if (path.startsWith('/settings/')) {
         // Nenhuma aba da navegação principal deve ficar ativa para as páginas de configurações
-        activeLinkPath = null; // <- Passa nulo para desativar todas
+        activeLinkPath = null;
     }
     setActiveLink(activeLinkPath); // Atualiza a classe 'active' nos links da nav
     // --- FIM ATUALIZAÇÃO LINK ---
@@ -175,7 +174,7 @@ export function handleRouteChange() {
 // Função para navegar programaticamente
 export function navigate(path, state = {}) {
     // Só adiciona ao histórico se a URL ou o estado realmente mudarem
-    if (window.location.pathname !== path || JSON.stringify(history.state) !== JSON.stringify(state)) {
+    if (window.location.pathname !== path || JSON.stringify(history.state || {}) !== JSON.stringify(state)) {
         history.pushState(state, '', path);
     }
     handleRouteChange(); // Chama a função para processar a nova rota
