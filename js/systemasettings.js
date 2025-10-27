@@ -1,30 +1,32 @@
 // js/systemasettings.js
 import { showToast, showLoading, hideLoading } from './ui.js';
-// Importa 'auth' DIRETAMENTE do firebase-config
 import { auth, db } from './firebase-config.js';
-// Não precisa mais importar getAuth daqui, pois já vem do firebase-config
+// Importa 'updatePassword' e 'reauthenticateWithCredential', 'EmailAuthProvider' (para lidar com erro de login recente)
+import { sendPasswordResetEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-auth.js";
 import { doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
-import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-auth.js";
 
-// REMOVE a declaração 'let auth;' daqui. 'db' ainda pode ser útil via init se preferir.
-let localDb; // Renomeado para evitar conflito se db for importado
+
+let localDb;
 let currentUserDataForPage = null;
 
-// Elementos da Página de Perfil
+// --- Elementos da Página de Perfil ---
 let profileFormElement = null;
 let nameInput = null;
 let phoneInput = null;
 let profileFeedbackDiv = null;
 
-// Elementos da Página de Segurança
+// --- Elementos da Página de Segurança ---
 let resetPasswordBtn = null;
 let securityFeedbackDiv = null;
+// NOVOS Elementos para Update de Senha
+let updatePasswordForm = null;
+let newPasswordInput = null;
+let confirmPasswordInput = null;
+let updatePasswordFeedbackDiv = null;
 
 // A função init ainda pode receber outras dependências se necessário
 export function init(dependencies) {
-    // Se você ainda passa 'db' via dependência, pode atribuí-lo aqui
-    localDb = dependencies.db; // Atribui à variável localDb
-    // Não precisa mais fazer auth = dependencies.auth;
+    localDb = dependencies.db;
     console.log("systemasettings.js: init chamado (db atribuído).");
 }
 
@@ -33,6 +35,7 @@ export function init(dependencies) {
  * Busca dados do usuário e configura o formulário de perfil.
  */
 export async function loadProfileData() {
+    // ... (código existente sem alterações) ...
     console.log("loadProfileData iniciado.");
 
     profileFormElement = document.getElementById('user-settings-form');
@@ -50,9 +53,7 @@ export async function loadProfileData() {
     profileFormElement.removeEventListener('submit', handleSettingsUpdate);
     profileFormElement.addEventListener('submit', handleSettingsUpdate);
 
-    // A verificação agora usa o 'auth' importado diretamente
     if (!auth) {
-        // Este erro agora é MUITO improvável, a menos que firebase-config falhe
         console.error("loadProfileData: ERRO IMPREVISTO - O serviço 'auth' importado é inválido!");
         showToast("Erro crítico na configuração do Firebase.", "error");
         return;
@@ -76,12 +77,11 @@ export async function loadProfileData() {
 
     showLoading();
     try {
-        // Usa 'localDb' que foi definido em init() ou 'db' importado diretamente
-        const dbRef = localDb || db; // Escolhe a referência do DB a usar
+        const dbRef = localDb || db;
         if (!dbRef) {
             throw new Error("Referência do Firestore (db) não está disponível.");
         }
-        const userRef = doc(dbRef, "users", user.uid); // Usa dbRef
+        const userRef = doc(dbRef, "users", user.uid);
         console.log("Buscando documento Firestore:", userRef.path);
         const userSnap = await getDoc(userRef);
 
@@ -125,20 +125,27 @@ export async function loadProfileData() {
 
 /**
  * [EXPORTADO] Chamado pelo router quando a página /settings/security é exibida.
- * Configura o botão de reset de senha.
+ * Configura os botões e formulários da página de segurança.
  */
 export function setupSecurityPage() {
     console.log("setupSecurityPage iniciado.");
 
     resetPasswordBtn = document.getElementById('reset-password-btn');
     securityFeedbackDiv = document.getElementById('user-security-feedback');
+    // --- Pega referências dos novos elementos ---
+    updatePasswordForm = document.getElementById('update-password-form');
+    newPasswordInput = document.getElementById('user-settings-new-password');
+    confirmPasswordInput = document.getElementById('user-settings-confirm-password');
+    updatePasswordFeedbackDiv = document.getElementById('update-password-feedback');
+    // --- Fim novas referências ---
 
-    // Verifica se 'auth' está disponível antes de adicionar o listener
     if (!auth) {
-        console.error("setupSecurityPage: Serviço 'auth' não disponível para configurar botão de reset.");
+        console.error("setupSecurityPage: Serviço 'auth' não disponível.");
+        // Opcional: Desabilitar botões/forms se auth não estiver pronto
         return;
     }
 
+    // Botão de Reset por E-mail
     if (resetPasswordBtn) {
          resetPasswordBtn.removeEventListener('click', handlePasswordReset);
          resetPasswordBtn.addEventListener('click', handlePasswordReset);
@@ -147,18 +154,35 @@ export function setupSecurityPage() {
         console.warn("Botão de redefinir senha (#reset-password-btn) não encontrado.");
     }
 
+    // --- Adiciona Listener para o formulário de Alterar Senha ---
+    if (updatePasswordForm && newPasswordInput && confirmPasswordInput) {
+        updatePasswordForm.removeEventListener('submit', handleUpdatePasswordSubmit);
+        updatePasswordForm.addEventListener('submit', handleUpdatePasswordSubmit);
+        console.log("Listener adicionado ao formulário de alterar senha.");
+        // Limpa campos ao configurar
+        updatePasswordForm.reset();
+        if(updatePasswordFeedbackDiv) updatePasswordFeedbackDiv.textContent = '';
+    } else {
+         console.warn("Elementos do formulário de alterar senha não encontrados (#update-password-form, #user-settings-new-password, #user-settings-confirm-password).");
+    }
+    // --- Fim Listener ---
+
     if (securityFeedbackDiv) {
         securityFeedbackDiv.textContent = '';
         securityFeedbackDiv.style.color = 'initial';
     }
+    if (updatePasswordFeedbackDiv) { // Limpa feedback do outro form também
+        updatePasswordFeedbackDiv.textContent = '';
+        updatePasswordFeedbackDiv.style.color = 'initial';
+    }
 }
 
 
-// --- Funções de Lógica (handleSettingsUpdate, handlePasswordReset) ---
+// --- Funções de Lógica ---
 
 async function handleSettingsUpdate(e) {
+    // ... (código existente sem alterações) ...
     e.preventDefault();
-     // Verifica 'auth' importado aqui também
     if (!auth) {
         console.error("handleSettingsUpdate: Serviço 'auth' indisponível.");
         showToast("Erro interno. Tente recarregar.", "error");
@@ -183,12 +207,11 @@ async function handleSettingsUpdate(e) {
     showSettingsFeedback(profileFeedbackDiv, "Salvando alterações...", false);
 
     try {
-        // Usa 'localDb' ou 'db' importado
         const dbRef = localDb || db;
         if (!dbRef) {
             throw new Error("Referência do Firestore (db) não está disponível.");
         }
-        const userRef = doc(dbRef, "users", currentUserDataForPage.uid); // Usa dbRef
+        const userRef = doc(dbRef, "users", currentUserDataForPage.uid);
         await updateDoc(userRef, {
             name: newName,
             phone: newPhone
@@ -211,7 +234,7 @@ async function handleSettingsUpdate(e) {
 }
 
 async function handlePasswordReset() {
-     // Verifica 'auth' importado
+    // ... (código existente sem alterações) ...
     if (!auth) {
         console.error("handlePasswordReset: Serviço 'auth' indisponível.");
         showToast("Erro interno. Tente recarregar.", "error");
@@ -224,21 +247,89 @@ async function handlePasswordReset() {
     }
 
     showLoading();
-    showSettingsFeedback(securityFeedbackDiv, "Enviando e-mail de redefinição...", false);
+    showSettingsFeedback(securityFeedbackDiv, "Enviando e-mail de redefinição...", false); // Usa o feedback correto
 
     try {
         await sendPasswordResetEmail(auth, user.email);
         showToast(`E-mail de redefinição enviado para ${user.email}. Verifique sua caixa de entrada e spam.`, "success");
-        showSettingsFeedback(securityFeedbackDiv, `E-mail enviado para ${user.email}.`, false);
+        showSettingsFeedback(securityFeedbackDiv, `E-mail enviado para ${user.email}.`, false); // Usa o feedback correto
 
     } catch (error) {
         console.error("Erro ao enviar e-mail de redefinição:", error);
         let msg = "Erro ao enviar e-mail.";
-        showSettingsFeedback(securityFeedbackDiv, msg, true);
+        showSettingsFeedback(securityFeedbackDiv, msg, true); // Usa o feedback correto
     } finally {
         hideLoading();
     }
 }
+
+/**
+ * --- NOVA FUNÇÃO ---
+ * Manipula o submit do formulário de alteração de senha
+ */
+async function handleUpdatePasswordSubmit(e) {
+    e.preventDefault();
+    if (!auth) {
+        console.error("handleUpdatePasswordSubmit: Serviço 'auth' indisponível.");
+        showToast("Erro interno. Tente recarregar.", "error");
+        return;
+    }
+
+    const user = auth.currentUser;
+    if (!user) {
+        showToast("Você precisa estar logado para alterar a senha.", "error");
+        return;
+    }
+
+    const newPassword = newPasswordInput.value;
+    const confirmPassword = confirmPasswordInput.value;
+
+    // Validações
+    if (!newPassword || !confirmPassword) {
+        showSettingsFeedback(updatePasswordFeedbackDiv, "Preencha ambos os campos de senha.", true);
+        return;
+    }
+    if (newPassword.length < 6) {
+         showSettingsFeedback(updatePasswordFeedbackDiv, "A nova senha deve ter no mínimo 6 caracteres.", true);
+         return;
+    }
+    if (newPassword !== confirmPassword) {
+        showSettingsFeedback(updatePasswordFeedbackDiv, "As senhas não coincidem.", true);
+        return;
+    }
+
+    showLoading();
+    showSettingsFeedback(updatePasswordFeedbackDiv, "Atualizando senha...", false);
+
+    try {
+        await updatePassword(user, newPassword);
+        showToast("Senha alterada com sucesso!", "success");
+        showSettingsFeedback(updatePasswordFeedbackDiv, "Senha alterada com sucesso!", false);
+        updatePasswordForm.reset(); // Limpa o formulário
+
+    } catch (error) {
+        console.error("Erro ao atualizar senha:", error);
+        let msg = "Erro ao atualizar senha. Tente novamente.";
+        // --- Tratamento Específico para 'auth/requires-recent-login' ---
+        if (error.code === 'auth/requires-recent-login') {
+            msg = "Sua sessão expirou por segurança. Por favor, faça login novamente antes de tentar alterar a senha.";
+            // Idealmente, você poderia:
+            // 1. Deslogar o usuário: signOut(auth); navigate('/');
+            // 2. Ou tentar reautenticar (mais complexo, exigiria pedir a senha atual)
+            // Por simplicidade, vamos apenas avisar para relogar.
+            showToast(msg, 'error'); // Mostra um toast também
+        }
+        // --- Fim Tratamento Específico ---
+         else if (error.code === 'auth/weak-password') {
+            msg = "A senha fornecida é muito fraca.";
+        }
+        showSettingsFeedback(updatePasswordFeedbackDiv, msg, true);
+    } finally {
+        hideLoading();
+    }
+}
+// --- FIM NOVA FUNÇÃO ---
+
 
 // Função auxiliar para mostrar feedback
 function showSettingsFeedback(feedbackElement, message, isError = false) {
