@@ -46,9 +46,27 @@ export function init(dependencies) {
  * <<< ADICIONE O 'export' AQUI >>>
  */
 export async function loadReferences() {
-    hasLoaded = true; // Marca como carregado para não buscar de novo
     const grid = document.getElementById('references-grid');
-    if (!grid) return;
+    if (!grid) {
+        console.error("loadReferences: Elemento #references-grid não encontrado!");
+        return;
+    }
+
+    // --- VERIFICAÇÃO SE O DB ESTÁ PRONTO ---
+    if (!db) {
+        console.warn("loadReferences: 'db' ainda não está pronto. Tentando novamente em 100ms...");
+        grid.innerHTML = '<p style="text-align: center; width: 100%;">Inicializando conexão...</p>'; // Mensagem de inicialização
+        setTimeout(loadReferences, 100); // Tenta novamente em breve
+        return; // Sai desta execução
+    }
+    // --- FIM DA VERIFICAÇÃO ---
+
+    // Evita recarregar múltiplas vezes (move a flag para depois da verificação do db)
+    if (hasLoaded) {
+        console.log("loadReferences: Skip - Já carregado ou em carregamento.");
+        return;
+    }
+    hasLoaded = true; // Marca como carregado AGORA
 
     // Mostra um loading temporário dentro do grid
     grid.innerHTML = '<p style="text-align: center; width: 100%;">Carregando referências...</p>';
