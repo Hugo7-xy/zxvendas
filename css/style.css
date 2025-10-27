@@ -36,7 +36,7 @@ body {
     line-height: 1.7; /* Aumentado ligeiramente para leitura */
     min-height: 100vh;
     background-image:
-        linear-gradient(rgba(27, 18, 10, 0.92), rgba(27, 18, 10, 0.92)), /* Mais opaco */
+        linear-gradient(rgba(27, 18, 10, 0.75), rgba(27, 18, 10, 0.75)), /* Mais opaco */
         url('/fundo-dourado.jpg');
     background-size: cover;
     background-position: center center;
