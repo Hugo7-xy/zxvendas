@@ -11,16 +11,16 @@ let currentUser = null; // Armazena o usuário logado e seus dados
 // Função handleUserDataUpdate (OPCIONAL, mas recomendada para atualizar nome no painel)
 function handleUserDataUpdate() {
     const displayNameEl = document.getElementById('user-display-name');
-    // Garante que auth.currentUser existe antes de acessar uid
+    // Adiciona verificação para auth.currentUser
     if (displayNameEl && currentUser && auth.currentUser && currentUser.uid === auth.currentUser.uid) {
-        // Rebusca os dados do Firestore para garantir a atualização
         fetchUserData(currentUser.uid).then(updatedData => {
-             // Atualiza currentUser local com os dados mais recentes do Auth e Firestore
              currentUser = { ...auth.currentUser, ...updatedData };
              displayNameEl.textContent = updatedData.name || currentUser.displayName || currentUser.email;
         }).catch(error => {
             console.error("Erro ao rebuscar dados do usuário após atualização:", error);
         });
+    } else {
+         console.log("handleUserDataUpdate: Não atualizou nome (usuário deslogado ou mismatch?)");
     }
 }
 
