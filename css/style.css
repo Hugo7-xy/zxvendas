@@ -27,7 +27,6 @@ body {
 header {
     background-color: #1b120a; /* Cor escura unificada */
     padding: 1rem 2rem;
-    /* border-bottom: 2px solid #c8a664; */ /* REMOVIDO */
     position: sticky;
     top: 0;
     left: 0;
@@ -39,14 +38,48 @@ header {
 .logo-area { text-align: left; }
 header h1 { color: #f3d999; margin: 0; font-size: 1.8rem; }
 header p { margin: 0; font-size: 0.9rem; color: #f3d999; }
-.menu-btn { background: none; border: 2px solid #c8a664; color: #f3d999; font-size: 1.5rem; padding: 0.4rem 0.8rem; border-radius: 5px; cursor: pointer; transition: all 0.3s ease; }
-.menu-btn:hover { background-color: #c8a664; color: #1b120a; }
+
+/* Ajustes no botão de menu existente */
+.menu-btn {
+    background: none;
+    border: 2px solid #c8a664; /* Mantém a borda */
+    color: #f3d999;
+    width: 45px; /* Tamanho fixo para ser redondo */
+    height: 45px; /* Tamanho fixo para ser redondo */
+    border-radius: 50%; /* Faz o botão redondo */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex; /* Para centralizar o conteúdo */
+    justify-content: center;
+    align-items: center;
+    padding: 0; /* Remove padding interno */
+    overflow: hidden; /* Garante que a imagem não saia do botão */
+}
+
+.menu-btn:hover {
+    background-color: rgba(200, 166, 100, 0.2); /* Fundo sutil no hover */
+    border-color: #f3d999; /* Clareia a borda no hover */
+}
+
+/* Estilo para o ícone padrão */
+.menu-btn .user-icon {
+    font-size: 1.5rem; /* Ajusta o tamanho do ícone */
+    line-height: 1; /* Centraliza o ícone verticalmente */
+    color: #f3d999; /* Cor do ícone */
+}
+
+/* Estilo para a imagem de perfil */
+.menu-btn .profile-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Garante que a imagem cubra o espaço redondo */
+    border-radius: 50%; /* Garante que a imagem seja redonda (caso não seja quadrada) */
+}
 
 /* Navegação Principal */
 .main-nav {
     width: 100%;
     background-color: #1b120a; /* Cor escura unificada */
-    /* border-top: 1px solid #8b6c43; */ /* REMOVIDO */
     border-bottom: 2px solid #c8a664; /* ADICIONADO */
     display: flex;
     justify-content: center;
@@ -58,7 +91,6 @@ header p { margin: 0; font-size: 0.9rem; color: #f3d999; }
 .nav-list li a.active {
     color: #fff5d8;
     background-color: rgba(200, 166, 100, 0.2);
-    /* border-bottom-color: #c8a664; */ /* REMOVIDO */
 }
 .nav-list li a i { margin-right: 0.5rem; }
 .nav-list li a .nav-text { display: inline; }
@@ -92,9 +124,34 @@ header p { margin: 0; font-size: 0.9rem; color: #f3d999; }
 .video-placeholder { width: 100%; height: 180px; border-bottom: 2px solid #c8a664; background: #000; display: flex; justify-content: center; align-items: center; text-align: center; padding: 1rem; color: #c8a664; font-weight: 600; font-size: 0.9rem; }
 
 /* Página de Canais e Referências */
-.channels-container, .references-container, .dashboard-container { max-width: 1100px; margin: 2rem auto; padding: 2rem; background: rgba(27, 18, 10, 0.85); border-radius: 8px; border: 1px solid #8b6c43; }
-.channels-container h1, .references-container h1, .channels-container h2, .dashboard-container h1 { text-align: center; color: #c8a664; margin-bottom: 0.5rem; }
-.channels-container p, .references-container p { text-align: center; color: #f3d999; margin-bottom: 2rem; }
+.channels-container, .references-container, .dashboard-container, .settings-container { /* Adicionado .settings-container */
+    max-width: 1100px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: rgba(27, 18, 10, 0.85);
+    border-radius: 8px;
+    border: 1px solid #8b6c43;
+}
+/* Ajuste de largura para settings */
+.settings-container { max-width: 700px; }
+
+.channels-container h1, .references-container h1, .channels-container h2, .dashboard-container h1, .settings-container h1 { /* Adicionado .settings-container h1 */
+    text-align: center;
+    color: #c8a664;
+    margin-bottom: 0.5rem;
+}
+.channels-container p, .references-container p, .settings-container p { /* Adicionado .settings-container p */
+    text-align: center;
+    color: #f3d999;
+    margin-bottom: 2rem;
+}
+/* Ajuste borda inferior H1 settings */
+.settings-container h1 {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #4e3d2c;
+}
+
 .main-channels { display: flex; justify-content: center; gap: 1rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
 .channel-button { padding: 0.8rem 1.5rem; border-radius: 5px; text-decoration: none; color: #fff; font-weight: 600; transition: all 0.3s ease; }
 .channel-button.telegram { background-color: #2AABEE; }
@@ -236,7 +293,7 @@ header p { margin: 0; font-size: 0.9rem; color: #f3d999; }
 .tag-label:hover { background-color: rgba(200, 166, 100, 0.2); }
 .tag-checkbox:checked + .tag-label { background-color: #c8a664; color: #1b120a; border-color: #c8a664; box-shadow: 0 0 8px rgba(200, 166, 100, 0.5); }
 
-/* UPLOAD DE FOTO DE PERFIL */
+/* UPLOAD DE FOTO DE PERFIL (VENDEDOR) */
 .profile-picture-group { display: flex; flex-direction: column; align-items: center; margin-bottom: 1.5rem; }
 .profile-picture-preview { width: 100px; height: 100px; border-radius: 50%; overflow: hidden; margin-bottom: 1rem; border: 3px solid #c8a664; background-color: #312318; }
 .profile-picture-preview img { width: 100%; height: 100%; object-fit: cover; }
@@ -307,6 +364,93 @@ header p { margin: 0; font-size: 0.9rem; color: #f3d999; }
 .vendor-info .vendor-email { font-size: 0.8rem; color: #8b6c43; font-style: italic; }
 .vendor-product-item .action-btn { min-width: 120px; text-align: center; justify-content: center; }
 
+
+/* Estilos para as Páginas de Configurações */
+.settings-container {
+    max-width: 700px; /* Largura da área de conteúdo */
+    margin: 2rem auto;
+    padding: 2rem;
+    background: rgba(27, 18, 10, 0.85);
+    border-radius: 8px;
+    border: 1px solid #8b6c43;
+}
+
+.settings-container h1 {
+    text-align: center;
+    color: #c8a664;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #4e3d2c;
+}
+
+/* Navegação interna (abas/links) */
+.settings-nav {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.settings-nav-link {
+    padding: 0.6rem 1.2rem;
+    color: #f3d999;
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 5px;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.settings-nav-link:hover {
+    background-color: rgba(200, 166, 100, 0.1);
+    border-color: #8b6c43;
+}
+
+.settings-nav-link.active {
+    background-color: #c8a664;
+    color: #1b120a;
+    border-color: #c8a664;
+    box-shadow: 0 0 10px rgba(200, 166, 100, 0.4);
+}
+
+/* Conteúdo da aba ativa */
+.settings-content h2 {
+    color: #c8a664;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+.settings-content p {
+    color: #f3d999;
+    margin-bottom: 1.5rem;
+}
+
+/* Ajustes no formulário dentro da página */
+#user-settings-form {
+    max-width: 450px; /* Limita largura do form */
+    margin: 0 auto; /* Centraliza */
+}
+
+/* Feedback dentro das páginas */
+#user-settings-feedback,
+#user-security-feedback {
+    min-height: 1.2em;
+    font-weight: 600;
+    text-align: center; /* Centraliza feedback */
+}
+
+/* Botão de reset na página */
+#reset-password-btn {
+    width: 100%;
+    margin-top: 1rem;
+    background-color: #8b6c43;
+    color: #fff;
+}
+#reset-password-btn:hover {
+     background-color: #c8a664;
+     color: #1b120a;
+}
+
+
 /* --- Media Query para Mobile --- */
 @media (max-width: 768px) {
     .header-content { padding: 0 1rem; }
@@ -333,11 +477,7 @@ header p { margin: 0; font-size: 0.9rem; color: #f3d999; }
         justify-content: space-between;
         align-items: center;
         padding: 1rem 1.5rem;
-        background-color: #312318;
-        border-bottom: 1px solid #8b6c43;
     }
-
-    /* O botão X (#close-filter-btn) já herda .close-panel-btn. Nenhum estilo extra aqui. */
 
     /* Painel Vendedor Mobile (Vertical Ícones) */
     .modal-content-tabs { padding: 0; height: 85vh; max-height: 85vh; flex-direction: row; }
@@ -363,6 +503,13 @@ header p { margin: 0; font-size: 0.9rem; color: #f3d999; }
     .vendor-info { width: 100%; }
     .vendor-product-item .actions { width: 100%; }
     .vendor-product-item .action-btn { flex-grow: 1; width: 50%; min-width: 0; }
+
+    /* Ajustes Mobile para Páginas de Configurações */
+    .settings-container { padding: 1.5rem; margin: 1rem auto; }
+    .settings-nav { gap: 0.5rem; }
+    .settings-nav-link { padding: 0.5rem 1rem; font-size: 0.9rem; }
+    .settings-content h2 { font-size: 1.3rem; }
+
 }
 /* Estilos para o Cabeçalho e Botão Voltar na Página de Vendedor */
 .seller-products-header {
@@ -386,7 +533,6 @@ header p { margin: 0; font-size: 0.9rem; color: #f3d999; }
     flex-grow: 1; /* Faz o título ocupar espaço restante */
     text-align: left; /* Alinha título à esquerda */
 }
-
 
 .back-button {
     background-color: #8b6c43; /* Cor mais sutil */
@@ -414,7 +560,7 @@ header p { margin: 0; font-size: 0.9rem; color: #f3d999; }
     font-size: 0.8rem; /* Ajusta tamanho do ícone */
 }
 
-/* Ajuste para mobile (opcional) */
+/* Ajuste para mobile (opcional) para Cabeçalho Vendedor */
 @media (max-width: 768px) {
     .seller-products-header {
         flex-direction: column; /* Empilha botão e título */
@@ -431,49 +577,3 @@ header p { margin: 0; font-size: 0.9rem; color: #f3d999; }
         font-size: 0.85rem;
     }
 }
-/* Ajustes no botão de menu existente */
-.menu-btn {
-    background: none;
-    border: 2px solid #c8a664; /* Mantém a borda */
-    color: #f3d999;
-    width: 45px; /* Tamanho fixo para ser redondo */
-    height: 45px; /* Tamanho fixo para ser redondo */
-    border-radius: 50%; /* Faz o botão redondo */
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex; /* Para centralizar o conteúdo */
-    justify-content: center;
-    align-items: center;
-    padding: 0; /* Remove padding interno */
-    overflow: hidden; /* Garante que a imagem não saia do botão */
-}
-
-.menu-btn:hover {
-    background-color: rgba(200, 166, 100, 0.2); /* Fundo sutil no hover */
-    border-color: #f3d999; /* Clareia a borda no hover */
-}
-
-/* Estilo para o ícone padrão */
-.menu-btn .user-icon {
-    font-size: 1.5rem; /* Ajusta o tamanho do ícone */
-    line-height: 1; /* Centraliza o ícone verticalmente */
-    color: #f3d999; /* Cor do ícone */
-}
-
-/* Estilo para a imagem de perfil */
-.menu-btn .profile-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Garante que a imagem cubra o espaço redondo */
-    border-radius: 50%; /* Garante que a imagem seja redonda (caso não seja quadrada) */
-}
-
-/* Classe utilitária para esconder/mostrar */
-.hidden {
-    display: none !important;
-}
-
-#user-settings-modal .modal-content { max-width: 450px; }
-#user-settings-feedback { min-height: 1.2em; font-weight: 600; text-align: center;}
-#reset-password-btn { width: 100%; margin-top: 1rem; background-color: #8b6c43; color: #fff; }
-#reset-password-btn:hover { background-color: #c8a664; color: #1b120a; }
