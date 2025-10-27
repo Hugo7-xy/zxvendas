@@ -64,44 +64,7 @@ async function fetchUserData(uid) {
 /**
  * Atualiza a interface do usuário com base no estado de login
  */
-function updateUI(user) {
-    const loggedOutView = document.getElementById('logged-out-view');
-    const loggedInView = document.getElementById('logged-in-view');
-    const panel = document.getElementById('user-side-panel');
-    const overlay = document.getElementById('panel-overlay');
-
-    if (user) {
-        // Logado
-        if (loggedOutView) loggedOutView.classList.add('hidden');
-        if (loggedInView) {
-             loggedInView.classList.remove('hidden');
-             const displayNameEl = document.getElementById('user-display-name');
-             if (displayNameEl) displayNameEl.textContent = user.displayName || user.name || user.email;
-        }
-
-        // Mostra o botão do painel se for vendedor ou admin
-        const dashboardBtn = document.getElementById('go-to-dashboard-btn');
-        if (dashboardBtn) {
-            if (user.role === 'vendedor' || user.role === 'admin') {
-                dashboardBtn.classList.remove('hidden');
-            } else {
-                dashboardBtn.classList.add('hidden');
-            }
-        }
-
-    } else {
-        // Deslogado
-        if (loggedOutView) loggedOutView.classList.remove('hidden');
-        if (loggedInView) loggedInView.classList.add('hidden');
-        const dashboardBtn = document.getElementById('go-to-dashboard-btn');
-        if (dashboardBtn) dashboardBtn.classList.add('hidden');
-    }
-
-    // Fecha o painel lateral (útil após login/logout)
-    if (panel) panel.classList.remove('is-open');
-    if (overlay) overlay.classList.add('hidden');
-}
-
+function updateUI(user) { const loggedOutView = document.getElementById('logged-out-view'), loggedInView = document.getElementById('logged-in-view'), panel = document.getElementById('user-side-panel'), overlay = document.getElementById('panel-overlay'), userIconPlaceholder = document.getElementById('user-icon-placeholder'), userProfileImg = document.getElementById('user-profile-img'); if (user) { if (loggedOutView) loggedOutView.classList.add('hidden'); if (loggedInView) { loggedInView.classList.remove('hidden'); const displayNameEl = document.getElementById('user-display-name'); if (displayNameEl) displayNameEl.textContent = user.name || user.displayName || user.email; } const dashboardBtn = document.getElementById('go-to-dashboard-btn'); if (dashboardBtn) { if (user.role === 'vendedor' || user.role === 'admin') { dashboardBtn.classList.remove('hidden'); } else { dashboardBtn.classList.add('hidden'); } } if (userIconPlaceholder && userProfileImg) { const photoURL = user.profileImageUrl || user.photoURL; console.log("URL da foto encontrada:", photoURL); if (photoURL) { userProfileImg.src = photoURL; userProfileImg.classList.remove('hidden'); userIconPlaceholder.classList.add('hidden'); } else { userProfileImg.src = ''; userProfileImg.classList.add('hidden'); userIconPlaceholder.classList.remove('hidden'); } } } else { if (loggedOutView) loggedOutView.classList.remove('hidden'); if (loggedInView) loggedInView.classList.add('hidden'); const dashboardBtn = document.getElementById('go-to-dashboard-btn'); if (dashboardBtn) dashboardBtn.classList.add('hidden'); if (userIconPlaceholder && userProfileImg) { userProfileImg.classList.add('hidden'); userProfileImg.src = ''; userIconPlaceholder.classList.remove('hidden'); } } }
 /**
  * Configura todos os ouvintes de eventos (cliques em botões)
  */
