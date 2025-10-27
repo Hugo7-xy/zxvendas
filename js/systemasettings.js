@@ -48,9 +48,19 @@ export async function loadProfileData() {
     profileFormElement.removeEventListener('submit', handleSettingsUpdate);
     profileFormElement.addEventListener('submit', handleSettingsUpdate);
 
+    // --- VERIFICAÇÃO REFORÇADA ---
+    if (!auth) {
+        console.error("loadProfileData: ERRO FATAL - O serviço 'auth' do Firebase não está inicializado neste módulo!");
+        showToast("Erro interno de configuração. Tente recarregar.", "error");
+        return; // Não podemos prosseguir sem 'auth'
+    }
+    console.log("loadProfileData: Objeto 'auth' verificado."); // Novo Log de verificação
+
     const user = auth.currentUser;
+    console.log("loadProfileData: auth.currentUser obtido:", user); // Log para ver o que foi retornado
+
     if (!user) {
-        console.warn("loadProfileData: Usuário não está logado."); // Log 4
+        console.warn("loadProfileData: Usuário não está logado (auth.currentUser é null/undefined)."); // Log 4
         showToast("Faça login para ver suas configurações.", "error");
         // Idealmente, redirecionar para login ou home aqui
         // import { navigate } from './router.js'; navigate('/');
