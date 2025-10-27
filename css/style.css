@@ -428,13 +428,16 @@ header p {
     border-top: 1px solid var(--color-border);
 }
 .accordion-header.active + .accordion-content { /* Padding vertical quando ativo */
-    padding-top: 1.5rem;
-    padding-bottom: 1.5rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
 }
 .whatsapp-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Botões um pouco maiores */
     gap: 1rem;
+    /* ADICIONE as duas linhas abaixo */
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
 }
 .whatsapp-grid .whatsapp-button { /* Reutiliza estilo, mas ajusta se necessário */
     font-size: 0.9rem;
