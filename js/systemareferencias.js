@@ -15,7 +15,7 @@ export function init(dependencies) {
             // Se o menu.js já usa o router, a navegação ocorrerá lá.
             // Aqui, apenas garantimos que o carregamento aconteça.
             if (!hasLoaded) {
-                loadReferences();
+                loadReferences(); // <<< Chamada interna ainda funciona
             }
             // Não prevenimos o default nem navegamos aqui,
             // deixamos o systemamenu.js/router.js cuidarem disso.
@@ -31,7 +31,7 @@ export function init(dependencies) {
                     const isHidden = referencesPage.classList.contains('hidden');
                     // Se a página ficou visível E ainda não carregou os dados
                     if (!isHidden && !hasLoaded) {
-                        loadReferences();
+                        loadReferences(); // <<< Chamada interna ainda funciona
                     }
                 }
             });
@@ -43,8 +43,9 @@ export function init(dependencies) {
 
 /**
  * Busca as referências no Firestore e as renderiza no grid
+ * <<< ADICIONE O 'export' AQUI >>>
  */
-async function loadReferences() {
+export async function loadReferences() {
     hasLoaded = true; // Marca como carregado para não buscar de novo
     const grid = document.getElementById('references-grid');
     if (!grid) return;
@@ -77,6 +78,7 @@ async function loadReferences() {
     } catch (error) {
         console.error("Erro ao carregar referências:", error);
         grid.innerHTML = '<p style="text-align: center; width: 100%;">Erro ao carregar referências. Tente novamente.</p>';
+        hasLoaded = false; // Permite tentar carregar de novo em caso de erro
     }
 }
 
