@@ -1,14 +1,12 @@
 // js/systemasettings.js
-import { showToast, showLoading, hideLoading } from './ui.js'; // Removido showModal, hideModal
-import { getAuth } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-auth.js"; // Removido sendPasswordResetEmail daqui
+import { showToast, showLoading, hideLoading } from './ui.js';
+import { getAuth } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-auth.js";
 import { getFirestore, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
-// NOVO: Importa função de reset de senha
 import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-auth.js";
-
 
 let auth;
 let db;
-let currentUserData = null; // Guarda dados do usuário atual ao carregar a página
+let currentUserDataForPage = null; // Renomeado para clareza, guarda dados usados na PÁGINA
 
 // Elementos da Página de Perfil
 let profileFormElement = null;
@@ -21,12 +19,9 @@ let resetPasswordBtn = null;
 let securityFeedbackDiv = null;
 
 export function init(dependencies) {
-    auth = dependencies.auth; // Recebe auth de app.js
-    db = dependencies.db;     // Recebe db de app.js
-
-    // Não adiciona listeners aqui diretamente, pois os elementos
-    // podem não estar visíveis no DOM ainda. As funções chamadas
-    // pelo router cuidarão disso.
+    auth = dependencies.auth;
+    db = dependencies.db;
+    console.log("systemasettings.js: init chamado."); // Log de inicialização
 }
 
 /**
@@ -34,80 +29,112 @@ export function init(dependencies) {
  * Busca dados do usuário e configura o formulário de perfil.
  */
 export async function loadProfileData() {
-    // Pega referências aos elementos DO PERFIL (só quando a página carrega)
+    console.log("loadProfileData iniciado."); // Log 1
+
     profileFormElement = document.getElementById('user-settings-form');
     nameInput = document.getElementById('user-settings-name');
     phoneInput = document.getElementById('user-settings-phone');
     profileFeedbackDiv = document.getElementById('user-settings-feedback');
 
+    // Verifica se os elementos essenciais existem
     if (!profileFormElement || !nameInput || !phoneInput) {
-        console.warn("Elementos do formulário de perfil não encontrados.");
+        console.error("Erro Crítico: Elementos do formulário de perfil NÃO encontrados (#user-settings-form, #user-settings-name, #user-settings-phone). Verifique os IDs no HTML."); // Log 2
         return;
+    } else {
+        console.log("Elementos do formulário encontrados:", { nameInput, phoneInput }); // Log 3
     }
 
-    // Adiciona listener de submit ao formulário de perfil
-    profileFormElement.removeEventListener('submit', handleSettingsUpdate); // Remove listener antigo se houver
+    // Garante que o listener de submit seja adicionado apenas uma vez
+    profileFormElement.removeEventListener('submit', handleSettingsUpdate);
     profileFormElement.addEventListener('submit', handleSettingsUpdate);
 
-    // Pega o usuário logado
     const user = auth.currentUser;
     if (!user) {
+        console.warn("loadProfileData: Usuário não está logado."); // Log 4
         showToast("Faça login para ver suas configurações.", "error");
-        // Opcional: redirecionar para login ou home
-        // navigate('/');
+        // Idealmente, redirecionar para login ou home aqui
+        // import { navigate } from './router.js'; navigate('/');
         return;
+    } else {
+         console.log("loadProfileData: Usuário logado:", user.uid); // Log 5
     }
 
-    // Guarda dados atuais
-    currentUserData = user;
+    // Reseta os campos antes de buscar, caso o usuário navegue de volta
+    nameInput.value = '';
+    phoneInput.value = '';
+    if (profileFeedbackDiv) profileFeedbackDiv.textContent = '';
 
-    // Busca dados do Firestore para preencher
-    showLoading(); // Mostra loading enquanto busca
+
+    showLoading();
     try {
         const userRef = doc(db, "users", user.uid);
+        console.log("Buscando documento Firestore:", userRef.path); // Log 6
         const userSnap = await getDoc(userRef);
+
         if (userSnap.exists()) {
             const firestoreData = userSnap.data();
-            nameInput.value = firestoreData.name || user.displayName || '';
-            phoneInput.value = firestoreData.phone || firestoreData.whatsapp || '';
-            // Atualiza currentUserData com dados mais recentes do Firestore
-            currentUserData = { ...user, ...firestoreData };
+            console.log("Dados do Firestore encontrados:", firestoreData); // Log 7: MUITO IMPORTANTE verificar este log!
+
+            // ---- PONTO CRÍTICO ----
+            // Verifica EXATAMENTE os nomes dos campos no seu Firestore (case-sensitive!)
+            const nameFromDb = firestoreData.name || user.displayName || '';
+            const phoneFromDb = firestoreData.phone || firestoreData.whatsapp || ''; // Tenta 'phone', depois 'whatsapp'
+
+            console.log("Valor a ser definido para NOME:", `"${nameFromDb}"`);     // Log 8
+            console.log("Valor a ser definido para TELEFONE:", `"${phoneFromDb}"`); // Log 9
+
+            // Atribui os valores aos inputs
+            nameInput.value = nameFromDb;
+            phoneInput.value = phoneFromDb;
+            // ---- FIM PONTO CRÍTICO ----
+
+            // Guarda os dados carregados para uso no submit
+            currentUserDataForPage = { uid: user.uid, email: user.email, ...firestoreData };
+            console.log("Valores definidos nos inputs. Verifique a tela."); // Log 10
+
         } else {
+            console.warn("Documento Firestore NÃO encontrado para o usuário:", user.uid); // Log 11
+            // Se não tem doc, usa dados do Auth se disponíveis e guarda
             nameInput.value = user.displayName || '';
-            phoneInput.value = '';
-            console.warn("Documento Firestore não encontrado para preencher configurações.");
+            phoneInput.value = ''; // Phone não vem do Auth
+             currentUserDataForPage = { uid: user.uid, email: user.email, name: user.displayName || '', phone: '' }; // Guarda dados básicos
         }
-        // Limpa feedback
+
+        // Limpa feedback anterior (redundante, mas seguro)
         if (profileFeedbackDiv) {
             profileFeedbackDiv.textContent = '';
             profileFeedbackDiv.style.color = 'initial';
         }
     } catch (error) {
-        console.error("Erro ao buscar dados para a página de perfil:", error);
-        showToast("Erro ao carregar suas informações.", "error");
+        console.error("Erro GERAL ao buscar/preencher dados do perfil:", error); // Log 12
+        showToast("Erro ao carregar suas informações. Verifique o console.", "error");
+         // Limpa inputs em caso de erro para não mostrar dados inconsistentes
+         nameInput.value = '';
+         phoneInput.value = '';
     } finally {
         hideLoading();
+        console.log("loadProfileData finalizado."); // Log 13
     }
 }
-
 
 /**
  * [EXPORTADO] Chamado pelo router quando a página /settings/security é exibida.
  * Configura o botão de reset de senha.
  */
 export function setupSecurityPage() {
-    // Pega referências aos elementos DE SEGURANÇA
+    console.log("setupSecurityPage iniciado."); // Log
+
     resetPasswordBtn = document.getElementById('reset-password-btn');
-    securityFeedbackDiv = document.getElementById('user-security-feedback'); // Novo ID para feedback
+    securityFeedbackDiv = document.getElementById('user-security-feedback');
 
     if (resetPasswordBtn) {
-         resetPasswordBtn.removeEventListener('click', handlePasswordReset); // Remove listener antigo
+         resetPasswordBtn.removeEventListener('click', handlePasswordReset);
          resetPasswordBtn.addEventListener('click', handlePasswordReset);
+         console.log("Listener adicionado ao botão de reset de senha."); // Log
     } else {
-        console.warn("Botão de redefinir senha não encontrado na página de segurança.");
+        console.warn("Botão de redefinir senha (#reset-password-btn) não encontrado na página de segurança."); // Log
     }
 
-    // Limpa feedback ao carregar a página
     if (securityFeedbackDiv) {
         securityFeedbackDiv.textContent = '';
         securityFeedbackDiv.style.color = 'initial';
@@ -115,13 +142,15 @@ export function setupSecurityPage() {
 }
 
 
-// --- Funções de Lógica (handleSettingsUpdate, handlePasswordReset - adaptadas) ---
+// --- Funções de Lógica (handleSettingsUpdate, handlePasswordReset) ---
 
-// Função para lidar com a atualização de nome e telefone (semelhante, mas usa profileFeedbackDiv)
 async function handleSettingsUpdate(e) {
     e.preventDefault();
-    const user = auth.currentUser; // Pega o usuário atual do Auth
-    if (!user) return showToast("Sessão expirada. Faça login novamente.", "error");
+    // Usa currentUserDataForPage que foi definido em loadProfileData
+    if (!currentUserDataForPage || !auth.currentUser || currentUserDataForPage.uid !== auth.currentUser.uid) {
+        showToast("Sessão inválida ou dados não carregados. Recarregue a página.", "error");
+        return;
+    }
 
     const newName = nameInput.value.trim();
     const newPhone = phoneInput.value.trim();
@@ -135,16 +164,22 @@ async function handleSettingsUpdate(e) {
     showSettingsFeedback(profileFeedbackDiv, "Salvando alterações...", false);
 
     try {
-        const userRef = doc(db, "users", user.uid);
+        const userRef = doc(db, "users", currentUserDataForPage.uid);
+        // Atualiza apenas os campos relevantes no Firestore
         await updateDoc(userRef, {
             name: newName,
-            phone: newPhone
+            phone: newPhone // Certifique-se que o campo no Firestore é 'phone'
+            // Se o campo for 'whatsapp', use: whatsapp: newPhone
         });
 
         showToast("Informações atualizadas com sucesso!", "success");
-        // Não precisa fechar modal
         showSettingsFeedback(profileFeedbackDiv, "Salvo com sucesso!", false);
-        // Dispara evento para atualizar UI (ex: nome no painel lateral)
+
+        // Atualiza os dados locais para refletir a mudança
+        currentUserDataForPage.name = newName;
+        currentUserDataForPage.phone = newPhone; // ou .whatsapp = newPhone
+
+        // Dispara evento para atualizar UI (ex: nome no painel lateral em systemamenu.js)
         document.dispatchEvent(new CustomEvent('userDataUpdated'));
 
     } catch (error) {
@@ -155,7 +190,6 @@ async function handleSettingsUpdate(e) {
     }
 }
 
-// Função para lidar com o pedido de redefinição de senha (semelhante, mas usa securityFeedbackDiv)
 async function handlePasswordReset() {
     const user = auth.currentUser;
     if (!user || !user.email) {
@@ -174,15 +208,19 @@ async function handlePasswordReset() {
     } catch (error) {
         console.error("Erro ao enviar e-mail de redefinição:", error);
         let msg = "Erro ao enviar e-mail.";
+        // Adicionar tratamentos específicos de erro se necessário
         showSettingsFeedback(securityFeedbackDiv, msg, true);
     } finally {
         hideLoading();
     }
 }
 
-// Função auxiliar para mostrar feedback (agora recebe o elemento de feedback como parâmetro)
+// Função auxiliar para mostrar feedback (recebe o elemento de feedback)
 function showSettingsFeedback(feedbackElement, message, isError = false) {
-    if (!feedbackElement) return;
+    if (!feedbackElement) {
+        console.warn("Elemento de feedback não encontrado para a mensagem:", message);
+        return;
+    }
     feedbackElement.textContent = message;
     feedbackElement.style.color = isError ? '#dc3545' : '#25D366'; // Vermelho ou Verde
 }
