@@ -472,3 +472,8 @@ header p { margin: 0; font-size: 0.9rem; color: #f3d999; }
 .hidden {
     display: none !important;
 }
+
+#user-settings-modal .modal-content { max-width: 450px; }
+#user-settings-feedback { min-height: 1.2em; font-weight: 600; text-align: center;}
+#reset-password-btn { width: 100%; margin-top: 1rem; background-color: #8b6c43; color: #fff; }
+#reset-password-btn:hover { background-color: #c8a664; color: #1b120a; }
