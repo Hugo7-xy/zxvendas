@@ -7,7 +7,7 @@
       "class": "discord"
     },
     {
-      "name": "Canal Telegram",
+      "name": "Telegram Oficial",
       "icon": "fab fa-telegram",
       "url": "https://t.me/lojadefreefiremf",
       "class": "telegram"
@@ -15,7 +15,7 @@
   ],
   "franchises": [
     {
-      "name": "Franquia F1 - Grupos Principais",
+      "name": "Franquia F1",
       "links": [
         {
           "name": "Grupo 01",
@@ -32,7 +32,7 @@
       ]
     },
     {
-      "name": "Franquia F2 - Novos Grupos",
+      "name": "Franquia F2",
       "links": [
         {
           "name": "Grupo 11",
@@ -45,7 +45,7 @@
       ]
     },
     {
-      "name": "Franquia Reserva",
+      "name": "Franquia F3",
       "links": [
         {
           "name": "Grupo Reserva",
