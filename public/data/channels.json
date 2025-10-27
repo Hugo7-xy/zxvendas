@@ -18,38 +18,25 @@
       "name": "Franquia F1",
       "links": [
         {
-          "name": "Grupo 01",
-          "url": "https://chat.whatsapp.com/SEU-LINK-GRUPO-01"
+          "name": "Grupo Whatsapp",
+          "url": "https://app.gruposinteligentes.com/r/mf_vendas"
         },
-        {
-          "name": "Grupo 02",
-          "url": "https://chat.whatsapp.com/SEU-LINK-GRUPO-02"
-        },
-        {
-          "name": "Grupo 03",
-          "url": "https://chat.whatsapp.com/SEU-LINK-GRUPO-03"
-        }
-      ]
-    },
+        
     {
       "name": "Franquia F2",
       "links": [
         {
-          "name": "Grupo 11",
-          "url": "https://chat.whatsapp.com/SEU-LINK-GRUPO-11"
+          "name": "Grupo Whatsappp",
+          "url": "https://app.gruposinteligentes.com/r/mf_vendass"
         },
-        {
-          "name": "Grupo 12",
-          "url": "https://chat.whatsapp.com/SEU-LINK-GRUPO-12"
-        }
       ]
     },
     {
       "name": "Franquia F3",
       "links": [
         {
-          "name": "Grupo Reserva",
-          "url": "https://chat.whatsapp.com/SEU-LINK-GRUPO-RESERVA"
+          "name": "Grupo Whatsapp",
+          "url": "https://app.gruposinteligentes.com/r/daniel_vendass"
         }
       ]
     }
