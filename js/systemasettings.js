@@ -146,8 +146,10 @@ export function setupSecurityPage() {
 
 async function handleSettingsUpdate(e) {
     e.preventDefault();
+    console.log("handleSettingsUpdate chamado. auth.currentUser:", auth.currentUser, "currentUserDataForPage:", currentUserDataForPage);
     // Usa currentUserDataForPage que foi definido em loadProfileData
     if (!currentUserDataForPage || !auth.currentUser || currentUserDataForPage.uid !== auth.currentUser.uid) {
+        console.error("Falha na validação da sessão!");
         showToast("Sessão inválida ou dados não carregados. Recarregue a página.", "error");
         return;
     }
