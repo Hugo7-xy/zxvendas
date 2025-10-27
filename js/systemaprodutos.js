@@ -151,7 +151,7 @@ function createProductCard(product, productId, sellerData) {
 
     const whatsappNumber = sellerData?.whatsapp || '';
     const sellerNameForMsg = sellerData?.name || 'Vendedor Verificado'; // Usa um nome padrão se não houver
-    const message = `Olá, ${sellerNameForMsg}! Tenho interesse na conta "${product.title || 'sem título'}" (ID: ${productId}) no valor de ${formattedPrice}, que vi na ZX Store.`; // Adiciona fallback para título
+    const message = `Olá, ${sellerNameForMsg}! Tenho interesse na conta "${product.title || 'sem título'}" no valor de ${formattedPrice}, que vi na ZX Store.`; // Adiciona fallback para título
     const whatsappLink = whatsappNumber ? `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodeURIComponent(message)}` : null;
 
     const videoUrl = product.videoUrl; let videoElementHtml = '';
