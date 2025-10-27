@@ -5,7 +5,7 @@ import { navigate } from './router.js';
 let db;
 let sellersData = null; // Armazena os dados dos vendedores carregados
 let isLoading = false; // Flag para evitar carregamentos múltiplos
-let hasRendered = false; // Flag para renderizar a galeria apenas uma vez por carregamento de página
+let hasRendered = false; // Flag para renderizar a galeria apenas uma vez por exibição da página
 
 // Função chamada pelo app.js para buscar dados em segundo plano (ou na primeira visita)
 export async function preloadSellers(database) {
@@ -15,7 +15,15 @@ export async function preloadSellers(database) {
     }
 
     isLoading = true;
-    db = database; // Guarda a referência do Firestore
+    // Garante que db seja atribuído mesmo se chamado antes de init
+    if (database) db = database;
+    if (!db) {
+        console.error("preloadSellers: Referência do Firestore (db) não disponível.");
+        isLoading = false;
+        sellersData = []; // Define como vazio para indicar erro
+        return;
+    }
+
 
     try {
         // --- MODIFICAÇÃO PARA ORDENAÇÃO ---
@@ -59,62 +67,53 @@ export function init(dependencies) {
     // Guarda a referência do Firestore se ainda não tivermos
     if(!db) db = dependencies.db;
 
-    // Listener para o link de navegação "Vendedores"
+    // Tenta pré-carregar os dados dos vendedores em segundo plano
+    preloadSellers(db);
+
+    // Listener para o link de navegação "Vendedores" - Simplificado
+    // A navegação principal é feita pelo router.js
+    // A renderização também é iniciada pelo router.js
     const navLink = document.querySelector('.nav-link[data-target="sellers-page"]');
     if (navLink) {
         navLink.addEventListener('click', (e) => {
-            e.preventDefault(); // Impede a navegação padrão
-            const targetPath = navLink.getAttribute('href');
-            navigate(targetPath); // Usa o roteador para navegar
-            // Tenta renderizar a galeria imediatamente após clicar no link
-            // A renderização só ocorrerá se os dados já estiverem carregados ou após carregá-los
-            renderSellersGallery();
+            // Apenas garante que a renderização tente ocorrer se ainda não ocorreu.
+            // O router.js fará a chamada principal de renderização.
+            if (!hasRendered) {
+                 renderSellersGallery();
+            }
         });
     }
 
-    // Listener para quando a PÁGINA de vendedores se torna visível (via roteador)
-    const sellersPage = document.getElementById('sellers-page');
-    if (sellersPage) {
-        // Observa mudanças na classe da página (especificamente a classe 'hidden')
-        const observer = new MutationObserver(mutations => {
-            mutations.forEach(mutation => {
-                if (mutation.attributeName === 'class') {
-                    const isHidden = sellersPage.classList.contains('hidden');
-                    // Se a página NÃO está mais escondida E ainda não foi renderizada
-                    if (!isHidden && !hasRendered) {
-                        renderSellersGallery(); // Renderiza a galeria
-                    }
-                    // Se a página voltar a ficar escondida, reseta o flag para renderizar na próxima vez
-                    if (isHidden) {
-                        hasRendered = false;
-                    }
-                }
-            });
-        });
-        // Inicia a observação das mudanças de atributos (classe)
-        observer.observe(sellersPage, { attributes: true });
-    }
+    // O MutationObserver foi removido, pois o router.js agora chama renderSellersGallery diretamente.
 }
 
 /**
  * Renderiza a galeria de vendedores na página.
  * Usa os dados pré-carregados (sellersData).
  * Se os dados não estiverem prontos, tenta buscá-los agora.
+ * <<< EXPORTADO >>>
  */
-async function renderSellersGallery() {
+export async function renderSellersGallery() {
     const grid = document.getElementById('sellers-grid');
     // Se não encontrar o grid ou já tiver renderizado nesta exibição da página, sai
-    if (!grid || hasRendered) return;
+    if (!grid) {
+        console.error("renderSellersGallery: Elemento #sellers-grid não encontrado!");
+        return;
+    }
+    if (hasRendered) {
+        console.log("renderSellersGallery: Já renderizado nesta visualização, saindo.");
+        return;
+    }
+
 
     // Mostra mensagem de carregamento
     grid.innerHTML = '<p style="text-align: center; width: 100%;">Carregando vendedores...</p>';
 
     // Se sellersData é um array vazio e não estamos carregando, significa que deu erro antes
      if (Array.isArray(sellersData) && sellersData.length === 0 && !isLoading) {
-         const message = '<p style="text-align: center; width: 100%;">Erro ao carregar vendedores. Tente novamente mais tarde.</p>';
-         if (sellersData === null) { // Adiciona verificação para caso tenha dado erro de índice
-            message += '<p style="text-align: center; width: 100%; font-size: 0.9em; color: #8b6c43;">(Verifique o console para possíveis erros de índice do Firestore)</p>';
-         }
+         let message = '<p style="text-align: center; width: 100%;">Erro ao carregar vendedores. Tente novamente mais tarde.</p>';
+         // A mensagem de erro de índice é logada no console durante o preloadSellers
+         message += '<p style="text-align: center; width: 100%; font-size: 0.9em; color: #8b6c43;">(Verifique o console para possíveis erros)</p>';
          grid.innerHTML = message;
          hasRendered = true; // Marca como "renderizado" (mesmo com erro) para não tentar de novo na mesma visualização
          return;
@@ -123,17 +122,24 @@ async function renderSellersGallery() {
 
     // Se os dados ainda não foram carregados E não está carregando agora
     if (!sellersData && !isLoading) {
-        console.log("Renderizando: Dados dos vendedores não pré-carregados. Buscando agora...");
-        await preloadSellers(db); // Espera o carregamento
+        console.log("Renderizando Vendedores: Dados não pré-carregados. Buscando agora...");
+        await preloadSellers(db); // Espera o carregamento (passa db se tiver)
         // Chama a função novamente para tentar renderizar com os dados carregados
-        // ATENÇÃO: Se houver erro no preloadSellers, ele pode entrar em loop. A flag hasRendered ajuda a prevenir.
-        if (!hasRendered) renderSellersGallery();
+        // Redefine hasRendered para false ANTES de chamar recursivamente
+        hasRendered = false;
+        renderSellersGallery(); // Tenta renderizar de novo
         return; // Sai desta execução, a próxima chamada cuidará da renderização
     }
-    // Se ainda está carregando em segundo plano, espera a próxima tentativa
+    // Se ainda está carregando em segundo plano, espera um pouco e tenta de novo
     else if (isLoading) {
-        console.log("Renderizando: Aguardando carregamento em segundo plano...");
-        // Poderia usar um setTimeout para tentar de novo, mas deixar o observer/clique tentar é mais simples
+        console.log("Renderizando Vendedores: Aguardando carregamento em segundo plano...");
+        setTimeout(() => {
+            if (!hasRendered) { // Tenta de novo só se ainda não renderizou
+                console.log("Renderizando Vendedores: Tentando novamente após timeout...");
+                hasRendered = false; // Garante que pode tentar renderizar
+                renderSellersGallery();
+            }
+        }, 500); // Tenta de novo em 500ms
         return;
     }
 
@@ -151,12 +157,13 @@ async function renderSellersGallery() {
         grid.innerHTML = '<p style="text-align: center; width: 100%;">Nenhum vendedor verificado encontrado.</p>';
         hasRendered = true; // Marca como renderizado
      } else {
-        // Estado inesperado (não deveria acontecer)
+        // Estado inesperado
         grid.innerHTML = '<p style="text-align: center; width: 100%;">Ocorreu um problema inesperado ao exibir os vendedores.</p>';
         console.error("renderSellersGallery: Estado inesperado após carregamento. sellersData:", sellersData);
         hasRendered = true; // Marca como renderizado para evitar loop
      }
 }
+
 
 /**
  * Cria o elemento HTML (<a>) para o card de um vendedor.
@@ -189,9 +196,17 @@ function createSellerCard(seller, sellerId) {
        e.preventDefault(); // Impede a navegação padrão do link <a>
        const path = card.getAttribute('href'); // Pega a URL amigável
        // Chama a função navigate do roteador, passando a URL E os dados extras (ID e nome real)
-       // Esses dados extras (state) são importantes para o router.js identificar o vendedor correto
        navigate(path, { sellerId: sellerId, sellerName: sellerName });
     });
 
     return card; // Retorna o elemento <a> criado
+}
+
+/**
+ * [EXPORTADO] Reseta a flag que indica se a galeria já foi renderizada.
+ * Chamado pelo router.js antes de processar uma nova rota.
+ */
+export function resetRenderFlag() {
+    hasRendered = false;
+    console.log("systemavendedores: resetRenderFlag() chamada.");
 }
