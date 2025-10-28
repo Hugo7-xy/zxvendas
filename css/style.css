@@ -881,3 +881,59 @@ header p {
 ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
 ::-webkit-scrollbar-thumb { background-color: var(--color-text-muted); border-radius: 4px; border: 2px solid transparent; background-clip: content-box; }
 ::-webkit-scrollbar-thumb:hover { background-color: var(--color-primary); }
+
+
+/* --- Adicione estas regras no final do seu css/style.css --- */
+
+/* Estilo para botões que contêm APENAS ícone (como Armas Evolutivas) */
+.item-filter-button.icon-only {
+    padding: 8px; /* Reduz o padding interno para dar mais espaço à imagem */
+    display: flex; /* Centraliza a imagem */
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* Garante que a imagem não saia dos limites arredondados */
+    min-height: 80px; /* Define uma altura mínima se necessário */
+}
+
+.item-filter-button.icon-only .item-filter-icon {
+    width: 100%;          /* Faz a imagem ocupar toda a largura */
+    height: 100%;         /* Faz a imagem ocupar toda a altura */
+    object-fit: contain; /* Ajusta a imagem mantendo a proporção, sem cortar */
+    /* object-fit: cover; */ /* Alternativa: Cobre todo espaço, cortando se necessário */
+    margin: 0;            /* Remove margens extras da imagem */
+    vertical-align: middle; /* Remove alinhamento padrão */
+    max-width: 100%;      /* Garante que não ultrapasse o botão */
+    max-height: 100%;     /* Garante que não ultrapasse o botão */
+}
+
+/* Remove o estilo inline que definia tamanho fixo para os ícones pequenos */
+/* Isto é importante para que as regras acima funcionem */
+.item-filter-icon {
+    /* Remova ou comente as linhas 'width' e 'height' se você as adicionou diretamente aqui */
+     /* width: 20px; */
+     /* height: 20px; */
+     /* margin-right: 5px; */ /* Mantém a margem para botões com texto */
+     /* vertical-align: middle; */ /* Mantém alinhamento para botões com texto */
+}
+
+/* Estilo específico para ícones DENTRO de botões com texto (mantém pequeno) */
+.item-filter-button:not(.icon-only) .item-filter-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+    vertical-align: middle;
+    flex-shrink: 0; /* Impede que o ícone encolha */
+}
+
+/* Ajusta o span do texto para ocupar o espaço restante */
+.item-filter-button:not(.icon-only) span {
+    flex-grow: 1;
+    text-align: center;
+}
+
+/* Ajusta o botão normal para usar flex */
+.item-filter-button:not(.icon-only) {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Ou 'flex-start' se preferir ícone à esquerda */
+}
