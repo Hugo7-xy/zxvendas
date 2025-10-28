@@ -68,7 +68,7 @@
     ]
   },
   "Armas Evolutivas": {
-    "icon": "/images/icons/evolutiva1.png", // Ícone geral da categoria
+    "icon": "/images/icons/evolutiva1.png", 
     "items": [
       { "name": "1-3", "icon": "/images/icons/1-3.png" },
       { "name": "3-5", "icon": "/images/icons/4-6.png" },
