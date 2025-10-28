@@ -138,32 +138,48 @@ function displayItemsForCategory(categoryKey) {
         return;
     }
 
-    items.forEach(item => {
+    items.forEach(itemData => {
+        // --- INÍCIO DA MODIFICAÇÃO ---
+        const isObject = typeof itemData === 'object' && itemData !== null && itemData.name;
+        const itemName = isObject ? itemData.name : itemData; // Pega o nome
+        const itemIcon = isObject ? itemData.icon : null; // Pega o ícone se existir
+        // --- FIM DA MODIFICAÇÃO ---
+
         // Reutiliza botão existente se já foi criado antes, senão cria um novo
-        let button = itemButtonElements[item];
+        let button = itemButtonElements[itemName]; // Usa itemName como chave
         if (!button) {
             button = document.createElement('button');
-            button.className = 'item-filter-button';
-            button.textContent = item;
+            button.className = 'item-filter-button'; // Mantenha a classe ou ajuste o CSS
             button.setAttribute('data-filter-type', 'item');
-            button.setAttribute('data-filter-value', item);
+            button.setAttribute('data-filter-value', itemName); // Usa itemName
+
+            // --- INÍCIO DA MODIFICAÇÃO ---
+            // Adiciona imagem e texto ao botão
+            let buttonContent = '';
+            if (itemIcon) {
+                // Adicione estilos CSS para a classe 'item-filter-icon' se necessário
+                buttonContent += `<img src="${itemIcon}" alt="${itemName}" class="item-filter-icon" style="width: 20px; height: 20px; margin-right: 5px; vertical-align: middle;">`;
+            }
+            buttonContent += `<span>${itemName}</span>`; // O nome do item
+            button.innerHTML = buttonContent;
+            // --- FIM DA MODIFICAÇÃO ---
+
 
             // Listener para TOGGLE e atualizar o Set global
             button.addEventListener('click', (e) => {
                 e.preventDefault();
                 button.classList.toggle('active');
                 if (button.classList.contains('active')) {
-                    currentSelectedItems.add(item); // Adiciona ao Set
+                    currentSelectedItems.add(itemName); // Adiciona ao Set
                 } else {
-                    currentSelectedItems.delete(item); // Remove do Set
+                    currentSelectedItems.delete(itemName); // Remove do Set
                 }
-                // console.log("Itens selecionados:", currentSelectedItems);
             });
-            itemButtonElements[item] = button; // Guarda a referência
+            itemButtonElements[itemName] = button; // Guarda a referência
         }
 
          // Garante que o estado 'active' está correto baseado no Set global
-         if (currentSelectedItems.has(item)) {
+         if (currentSelectedItems.has(itemName)) {
             button.classList.add('active');
          } else {
              button.classList.remove('active');
@@ -172,7 +188,6 @@ function displayItemsForCategory(categoryKey) {
         itemGrid.appendChild(button);
     });
 }
-
 
 /** Configura botões que abrem o modal **/
 function setupFilterModalOpeners() {
