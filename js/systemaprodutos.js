@@ -155,9 +155,30 @@ function createProductCard(product, productId, sellerData) {
     const whatsappLink = whatsappNumber ? `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodeURIComponent(message)}` : null;
 
     const videoUrl = product.videoUrl; let videoElementHtml = '';
-    if (videoUrl && (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be'))) { const embedUrl = getYouTubeEmbedUrl(videoUrl); videoElementHtml = `<iframe src="${embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>`; } // Added loading="lazy"
-    else if (videoUrl && videoUrl.includes('cdn.discordapp.com') && videoUrl.includes('.mp4')) { videoElementHtml = `<video src="${videoUrl}" controls loop muted playsinline preload="metadata"></video>`; } // Added preload="metadata"
-    else { videoElementHtml = `<div class="video-placeholder">Pré-visualização de vídeo indisponível</div>`; }
+    if (videoUrl && (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be'))) {
+        const embedUrl = getYouTubeEmbedUrl(videoUrl);
+        videoElementHtml = `<iframe src="${embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>`;
+    }
+    else if (videoUrl && videoUrl.includes('cdn.discordapp.com') && videoUrl.includes('.mp4')) {
+        videoElementHtml = `<video src="${videoUrl}" controls loop muted playsinline preload="metadata"></video>`;
+    }
+    // --- INÍCIO DA MODIFICAÇÃO PARA GOOGLE DRIVE ---
+    else if (videoUrl && videoUrl.includes('drive.google.com/file/d/')) {
+        try {
+            // Extrai o ID do arquivo da URL do Google Drive
+            const urlParts = videoUrl.split('/d/');
+            const fileId = urlParts[1].split('/')[0];
+            const embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+            videoElementHtml = `<iframe src="${embedUrl}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen loading="lazy" style="width: 100%; height: 180px;"></iframe>`;
+        } catch (e) {
+            console.error("Erro ao processar URL do Google Drive:", e);
+            videoElementHtml = `<div class="video-placeholder">URL do Google Drive inválida</div>`;
+        }
+    }
+    // --- FIM DA MODIFICAÇÃO ---
+    else {
+        videoElementHtml = `<div class="video-placeholder">Pré-visualização de vídeo indisponível</div>`;
+    }
 
     const buttonClass = whatsappLink ? "whatsapp-button" : "whatsapp-button disabled";
     const buttonTag = whatsappLink ? 'a' : 'button';
@@ -175,7 +196,6 @@ function createProductCard(product, productId, sellerData) {
         </div>`;
     return div;
 }
-
 
 /**
  * Converte URL normal do YouTube para URL de Embed.
