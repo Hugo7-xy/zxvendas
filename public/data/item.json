@@ -1,92 +1,92 @@
 {
-"populares": {
+  "populares": {
     "icon": "/images/icons/Itenspopulares1.png",
     "items": [
       {
         "name": "Anjo Azul",
-        "image": "/data/icons/anjo_azul.png"
+        "icon": "/data/icons/anjo_azul.png"
       },
       {
         "name": "Anjo Red",
-        "image": "/data/icons/anjo_red.png"
+        "icon": "/data/icons/anjo_red.png"
       },
       {
         "name": "Anjo Amarela",
-        "image": "/data/icons/anjo_amarela.png"
+        "icon": "/data/icons/anjo_amarela.png"
       },
       {
         "name": "Anjo Branca",
-        "image": "/data/icons/anjo_branca.png"
+        "icon": "/data/icons/anjo_branca.png"
       },
       {
         "name": "Anjo Verde",
-        "image": "/data/icons/anjo_verde.png"
+        "icon": "/data/icons/anjo_verde.png"
       },
       {
         "name": "Barbinha",
-        "image": "/data/icons/barbinha.png"
+        "icon": "/data/icons/barbinha.png"
       },
       {
         "name": "Aventureiro",
-        "image": "/data/icons/aventureiro.png"
+        "icon": "/data/icons/aventureiro.png"
       },
       {
         "name": "Jaqueta Beta",
-        "image": "/data/icons/jaqueta_beta.png"
+        "icon": "/data/icons/jaqueta_beta.png"
       },
       {
         "name": "Cabelo Rosa",
-        "image": "/data/icons/cabelo_rosa.png"
+        "icon": "/data/icons/cabelo_rosa.png"
       },
       {
         "name": "Sombra Roxa",
-        "image": "/data/icons/sombraroxa.png"
+        "icon": "/data/icons/sombraroxa.png"
       },
       {
         "name": "Calça Jazz",
-        "image": "/data/icons/calca_jazz.png"
+        "icon": "/data/icons/calca_jazz.png"
       },
       {
         "name": "Calça Sobrevivente",
-        "image": "/data/icons/calca_sobrevivente.png"
+        "icon": "/data/icons/calca_sobrevivente.png"
       },
       {
         "name": "Gola Alta Preta",
-        "image": "/data/icons/gola_alta_preta.png"
+        "icon": "/data/icons/gola_alta_preta.png"
       },
       {
         "name": "Gola Alta Branca",
-        "image": "/data/icons/gola_alta_branca.png"
+        "icon": "/data/icons/gola_alta_branca.png"
       },
       {
         "name": "Tênis Angelical",
-        "image": "/data/icons/tenis_angelical.png"
+        "icon": "/data/icons/tenis_angelical.png"
       },
       {
         "name": "Dunk Master",
-        "image": "/images/items/dunk_master.png"
+        "icon": "/images/items/dunk_master.png"
       },
       {
         "name": "Mestres antigos",
-        "image": "/data/icons/mestres_antigos.png"
+        "icon": "/data/icons/mestres_antigos.png"
       },
       {
         "name": "Mochila 8BITS",
-        "image": "/data/icons/mochila_8bits.png"
+        "icon": "/data/icons/mochila_8bits.png"
       },
       {
         "name": "Jaqueta ASUS",
-        "image": "/data/icons/jaqueta_asus.png"
+        "icon": "/data/icons/jaqueta_asus.png"
       },
       {
         "name": "Jaqueta A80",
-        "image": "/data/icons/jaqueta_a80.png"
+        "icon": "/data/icons/jaqueta_a80.png"
       },
       {
         "name": "Coelhão",
-        "image": "/data/icons/coelhao.png"
-      } 
-    ] 
+        "icon": "/data/icons/coelhao.png"
+      }
+    ]
   },
   "parcerias": {
     "icon": "/images/icons/parcerias1.png",
@@ -134,12 +134,24 @@
     ]
   },
   "armasEvolutivas": {
-    "icon": "/images/icons/evolutiva1.png", 
+    "icon": "/images/icons/evolutiva1.png",
     "items": [
-      { "name": "1-3", "icon": "/images/icons/1-3.png" },
-      { "name": "4-6", "icon": "/images/icons/4-6.png" },
-      { "name": "7-9", "icon": "/images/icons/7-9.png" },
-      { "name": "+10", "icon": "/images/icons/+10.png" }
+      {
+        "name": "1-3",
+        "icon": "/images/icons/1-3.png"
+      },
+      {
+        "name": "4-6",
+        "icon": "/images/icons/4-6.png"
+      },
+      {
+        "name": "7-9",
+        "icon": "/images/icons/7-9.png"
+      },
+      {
+        "name": "+10",
+        "icon": "/images/icons/+10.png"
+      }
     ]
   },
   "incubadoras": {
@@ -158,9 +170,9 @@
     "items": [
       "Punho Congelante",
       "Punho Cobra",
-      "Punho Ardente ",
+      "Punho Ardente",
       "Punho do Trovão",
-      "Punho Nocauteador ",
+      "Punho Nocauteador",
       "Punho Hiperlivro Dragão"
     ]
   }
