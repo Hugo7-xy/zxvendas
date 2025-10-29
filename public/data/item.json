@@ -2,90 +2,26 @@
   "populares": {
     "icon": "/images/icons/Itenspopulares1.png",
     "items": [
-      {
-        "name": "Anjo Azul",
-        "icon": "/images/icons/anjo_azul.png"
-      },
-      {
-        "name": "Anjo Red",
-        "icon": "/images/icons/anjo_red.png"
-      },
-      {
-        "name": "Anjo Amarela",
-        "icon": "/images/icons/anjo_amarela.png"
-      },
-      {
-        "name": "Anjo Branca",
-        "icon": "/images/icons/anjo_branca.png"
-      },
-      {
-        "name": "Anjo Verde",
-        "icon": "/images/icons/anjo_verde.png"
-      },
-      {
-        "name": "Barbinha",
-        "icon": "/images/icons/barbinha.png"
-      },
-      {
-        "name": "Aventureiro",
-        "icon": "/images/icons/aventureiro.png"
-      },
-      {
-        "name": "Jaqueta Beta",
-        "icon": "/images/icons/jaqueta_beta.png"
-      },
-      {
-        "name": "Cabelo Rosa",
-        "icon": "/images/icons/cabelo_rosa.png"
-      },
-      {
-        "name": "Sombra Roxa",
-        "icon": "/images/icons/sombraroxa.png"
-      },
-      {
-        "name": "Calça Jazz",
-        "icon": "/images/icons/calca_jazz.png"
-      },
-      {
-        "name": "Calça Sobrevivente",
-        "icon": "/images/icons/calca_sobrevivente.png"
-      },
-      {
-        "name": "Gola Alta Preta",
-        "icon": "/images/icons/gola_alta_preta.png"
-      },
-      {
-        "name": "Gola Alta Branca",
-        "icon": "/images/icons/gola_alta_branca.png"
-      },
-      {
-        "name": "Tênis Angelical",
-        "icon": "/images/icons/tenis_angelical.png"
-      },
-      {
-        "name": "Dunk Master",
-        "icon": "/images/icons/dunk_master.png"
-      },
-      {
-        "name": "Mestres antigos",
-        "icon": "/images/icons/mestres_antigos.png"
-      },
-      {
-        "name": "Mochila 8BITS",
-        "icon": "/images/icons/mochila_8bits.png"
-      },
-      {
-        "name": "Jaqueta ASUS",
-        "icon": "/images/icons/jaqueta_asus.png"
-      },
-      {
-        "name": "Jaqueta A80",
-        "icon": "/images/icons/jaqueta_a80.png"
-      },
-      {
-        "name": "Coelhão",
-        "icon": "/images/icons/coelhao.png"
-      }
+      "Anjo Azul",
+      "Anjo Red",
+      "Anjo Amarela",
+      "Anjo Branca",
+      "Anjo Verde",
+      "Barbinha",
+      "Aventureiro",
+      "Jaqueta Beta",
+      "Cabelo Rosa",
+      "Calça Jazz",
+      "Calça Sobrevivente",
+      "Gola Alta Preta",
+      "Gola Alta Branca",
+      "Tênis Angelical",
+      "Dunk Master",
+      "Mestres antigos",
+      "Mochila 8BITS",
+      "Jaqueta ASUS",
+      "Jaqueta A80",
+      "Coelhão"
     ]
   },
   "parcerias": {
@@ -96,8 +32,6 @@
       "Guenos",
       "Attack on Titãs",
       "Bluelock",
-      "Inosuke",
-      "Itachi",
       "NARUTO FULL 1 CPTL",
       "NARUTO FULL 2 CPTL",
       "Street Fighter",
@@ -134,46 +68,21 @@
     ]
   },
   "armasEvolutivas": {
-    "icon": "/images/icons/evolutiva1.png",
+    "icon": "/images/icons/evolutiva1.png", 
     "items": [
-      {
-        "name": "1-3",
-        "icon": "/images/icons/1-3.png"
-      },
-      {
-        "name": "4-6",
-        "icon": "/images/icons/4-6.png"
-      },
-      {
-        "name": "7-9",
-        "icon": "/images/icons/7-9.png"
-      },
-      {
-        "name": "+10",
-        "icon": "/images/icons/+10.png"
-      }
+      { "name": "1-3", "icon": "/images/icons/1-3.png" },
+      { "name": "4-6", "icon": "/images/icons/4-6.png" },
+      { "name": "7-9", "icon": "/images/icons/7-9.png" },
+      { "name": "+10", "icon": "/images/icons/+10.png" }
     ]
   },
   "incubadoras": {
     "icon": "/images/icons/incubadora1.png",
     "items": [
-      "Cristal Estelar",
-      "Besta Estelar",
+      "Incubadora Galáxia",
       "Sombra Marinha",
-      "Sombra Dourada",
       "Nobres Samurais",
       "Fitinhas"
-    ]
-  },
-  "punhos": {
-    "icon": "/images/icons/punhos1.png",
-    "items": [
-      "Punho Congelante",
-      "Punho Cobra",
-      "Punho Ardente",
-      "Punho do Trovão",
-      "Punho Nocauteador",
-      "Punho Hiperlivro Dragão"
     ]
   }
 }
