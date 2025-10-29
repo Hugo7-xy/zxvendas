@@ -329,7 +329,7 @@ async function deleteReferenceFromDb(refId, imageUrl) {
                    const imagePath = new URL(imageUrl).pathname.split('/o/')[1].split('?')[0].replace(/%2F/g, '/');
                    const pathRef = ref(storage, decodeURIComponent(imagePath));
                    await deleteObject(pathRef);
-                   console.log("Imagem deletada via caminho relativo.");
+                   
               } catch (pathError) {
                    console.error("Erro ao tentar deletar imagem do Storage via caminho relativo:", pathError);
               }
