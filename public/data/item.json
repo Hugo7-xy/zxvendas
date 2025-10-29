@@ -4,87 +4,87 @@
     "items": [
       {
         "name": "Anjo Azul",
-        "icon": "/data/icons/anjo_azul.png"
+        "icon": "/images/icons/anjo_azul.png"
       },
       {
         "name": "Anjo Red",
-        "icon": "/data/icons/anjo_red.png"
+        "icon": "/images/icons/anjo_red.png"
       },
       {
         "name": "Anjo Amarela",
-        "icon": "/data/icons/anjo_amarela.png"
+        "icon": "/images/icons/anjo_amarela.png"
       },
       {
         "name": "Anjo Branca",
-        "icon": "/data/icons/anjo_branca.png"
+        "icon": "/images/icons/anjo_branca.png"
       },
       {
         "name": "Anjo Verde",
-        "icon": "/data/icons/anjo_verde.png"
+        "icon": "/images/icons/anjo_verde.png"
       },
       {
         "name": "Barbinha",
-        "icon": "/data/icons/barbinha.png"
+        "icon": "/images/icons/barbinha.png"
       },
       {
         "name": "Aventureiro",
-        "icon": "/data/icons/aventureiro.png"
+        "icon": "/images/icons/aventureiro.png"
       },
       {
         "name": "Jaqueta Beta",
-        "icon": "/data/icons/jaqueta_beta.png"
+        "icon": "/images/icons/jaqueta_beta.png"
       },
       {
         "name": "Cabelo Rosa",
-        "icon": "/data/icons/cabelo_rosa.png"
+        "icon": "/images/icons/cabelo_rosa.png"
       },
       {
         "name": "Sombra Roxa",
-        "icon": "/data/icons/sombraroxa.png"
+        "icon": "/images/icons/sombraroxa.png"
       },
       {
         "name": "Calça Jazz",
-        "icon": "/data/icons/calca_jazz.png"
+        "icon": "/images/icons/calca_jazz.png"
       },
       {
         "name": "Calça Sobrevivente",
-        "icon": "/data/icons/calca_sobrevivente.png"
+        "icon": "/images/icons/calca_sobrevivente.png"
       },
       {
         "name": "Gola Alta Preta",
-        "icon": "/data/icons/gola_alta_preta.png"
+        "icon": "/images/icons/gola_alta_preta.png"
       },
       {
         "name": "Gola Alta Branca",
-        "icon": "/data/icons/gola_alta_branca.png"
+        "icon": "/images/icons/gola_alta_branca.png"
       },
       {
         "name": "Tênis Angelical",
-        "icon": "/data/icons/tenis_angelical.png"
+        "icon": "/images/icons/tenis_angelical.png"
       },
       {
         "name": "Dunk Master",
-        "icon": "/images/items/dunk_master.png"
+        "icon": "/images/icons/dunk_master.png"
       },
       {
         "name": "Mestres antigos",
-        "icon": "/data/icons/mestres_antigos.png"
+        "icon": "/images/icons/mestres_antigos.png"
       },
       {
         "name": "Mochila 8BITS",
-        "icon": "/data/icons/mochila_8bits.png"
+        "icon": "/images/icons/mochila_8bits.png"
       },
       {
         "name": "Jaqueta ASUS",
-        "icon": "/data/icons/jaqueta_asus.png"
+        "icon": "/images/icons/jaqueta_asus.png"
       },
       {
         "name": "Jaqueta A80",
-        "icon": "/data/icons/jaqueta_a80.png"
+        "icon": "/images/icons/jaqueta_a80.png"
       },
       {
         "name": "Coelhão",
-        "icon": "/data/icons/coelhao.png"
+        "icon": "/images/icons/coelhao.png"
       }
     ]
   },
