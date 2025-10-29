@@ -79,8 +79,10 @@
   "incubadoras": {
     "icon": "/images/icons/incubadora1.png",
     "items": [
-      "Incubadora Galáxia",
+      "Cristal Estelar",
+      "Besta Estelar",
       "Sombra Marinha",
+      "Sombra Dourada",
       "Nobres Samurais",
       "Fitinhas"
     ]
