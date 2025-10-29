@@ -937,3 +937,21 @@ header p {
     align-items: center;
     justify-content: center; /* Ou 'flex-start' se preferir ícone à esquerda */
 }
+/* css/style.css */
+
+/* Estilo para o botão de submit do form de referência QUANDO desabilitado */
+#add-reference-form button[type="submit"]:disabled {
+  background-color: var(--color-text-muted); /* Cor mais escura/apagada do seu tema */
+  color: var(--color-border); /* Cor de texto mais apagada */
+  cursor: not-allowed; /* Indica que não é clicável */
+  opacity: 0.6; /* Reduz a opacidade */
+  box-shadow: none; /* Remove sombra */
+  transform: none; /* Remove efeito de hover */
+}
+
+/* Opcional: Remover o efeito hover quando desabilitado */
+#add-reference-form button[type="submit"]:disabled:hover {
+  background-color: var(--color-text-muted); /* Mantém a cor desabilitada */
+  transform: none;
+  box-shadow: none;
+}
