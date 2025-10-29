@@ -1,3 +1,4 @@
+// js/systemavendedor.js
 
 import { showModal, hideModal, showToast, showLoading, hideLoading, showConfirmationModal } from './ui.js';
 import { openItemFilterModalForSelection, clearItemSelections } from './systemafiltro.js';
@@ -260,8 +261,26 @@ async function deleteProductFromDb(productId) {
  */
 function setupReferenceForm() {
     const form = document.getElementById('add-reference-form'); if (!form) return;
-    const fileInput = document.getElementById('ref-image'); const fileNameDisplay = document.getElementById('file-name-display');
-    if (fileInput && fileNameDisplay) { fileInput.addEventListener('change', () => { if (fileInput.files.length > 0) { fileNameDisplay.textContent = fileInput.files[0].name; } else { fileNameDisplay.textContent = 'Nenhum arquivo selecionado'; } }); }
+    const fileInput = document.getElementById('ref-image');
+    const fileNameDisplay = document.getElementById('file-name-display');
+    const submitButton = form.querySelector('button[type="submit"]'); // Pega o botão de submit
+
+    if (submitButton) {
+        submitButton.disabled = true; // Desabilita o botão inicialmente
+    }
+
+    if (fileInput && fileNameDisplay && submitButton) {
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                fileNameDisplay.textContent = fileInput.files[0].name;
+                submitButton.disabled = false; // Habilita o botão se um arquivo for selecionado
+            } else {
+                fileNameDisplay.textContent = 'Nenhum arquivo selecionado';
+                submitButton.disabled = true; // Desabilita o botão se nenhum arquivo for selecionado
+            }
+        });
+    }
+
     form.addEventListener('submit', handleReferenceUpload);
 
     const listContainer = document.getElementById('vendor-references-list');
@@ -277,18 +296,60 @@ function setupReferenceForm() {
     }
 }
 
+
 /**
  * Manipula o SUBMIT do form de Adicionar Referência (upload)
  */
 async function handleReferenceUpload(e) {
-    e.preventDefault(); if (!currentUser) return showToast('Você precisa estar logado.', 'error'); const fileInput = document.getElementById('ref-image'); const file = fileInput.files[0]; if (!file) { showToast('Por favor, selecione um arquivo de imagem.', 'error'); return; } showLoading();
+    e.preventDefault();
+    if (!currentUser) return showToast('Você precisa estar logado.', 'error');
+    const fileInput = document.getElementById('ref-image');
+    const file = fileInput.files[0];
+    const submitButton = e.target.querySelector('button[type="submit"]'); // Pega o botão
+
+    if (!file) {
+        showToast('Por favor, selecione um arquivo de imagem.', 'error');
+        return;
+    }
+    showLoading();
+    if (submitButton) submitButton.disabled = true; // Desabilita durante o upload
+
     try {
-        const fileExtension = file.name.split('.').pop(); const fileName = `ref_${currentUser.uid}_${Date.now()}.${fileExtension}`; const storageRef = ref(storage, `references/${currentUser.uid}/${fileName}`);
-        const uploadTask = uploadBytesResumable(storageRef, file); await uploadTask; const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        await addDoc(collection(db, "references"), { imageUrl: downloadURL, sellerId: currentUser.uid, sellerName: currentUser.name, createdAt: serverTimestamp() });
-        showToast('Referência adicionada com sucesso!', 'success'); e.target.reset(); document.getElementById('file-name-display').textContent = 'Nenhum arquivo selecionado'; loadVendorReferences();
-    } catch (error) { console.error("Erro ao adicionar referência:", error); showToast('Erro ao enviar imagem. Tente novamente.', 'error'); } finally { hideLoading(); }
+        const fileExtension = file.name.split('.').pop();
+        const fileName = `ref_${currentUser.uid}_${Date.now()}.${fileExtension}`;
+        const storageRef = ref(storage, `references/${currentUser.uid}/${fileName}`);
+
+        const uploadTask = uploadBytesResumable(storageRef, file);
+        await uploadTask;
+        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+
+        await addDoc(collection(db, "references"), {
+            imageUrl: downloadURL,
+            sellerId: currentUser.uid,
+            sellerName: currentUser.name,
+            createdAt: serverTimestamp()
+        });
+
+        showToast('Referência adicionada com sucesso!', 'success');
+        e.target.reset();
+        document.getElementById('file-name-display').textContent = 'Nenhum arquivo selecionado';
+        if (submitButton) submitButton.disabled = true; // Desabilita após reset
+        loadVendorReferences();
+
+    } catch (error) {
+        console.error("Erro ao adicionar referência:", error);
+        showToast('Erro ao enviar imagem. Tente novamente.', 'error');
+        // Reabilita o botão apenas se der erro E AINDA HOUVER UM ARQUIVO SELECIONADO
+        if (submitButton && fileInput.files.length > 0) {
+             submitButton.disabled = false;
+        } else if (submitButton) {
+             submitButton.disabled = true; // Garante que fique desabilitado se não houver arquivo
+        }
+    } finally {
+        hideLoading();
+    }
 }
+
 
 /**
  * Carrega a lista de referências do vendedor logado
