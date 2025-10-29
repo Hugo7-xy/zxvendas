@@ -75,7 +75,7 @@ export async function loadChannelData() {
             throw new Error(`Falha ao carregar channels.json (Status: ${response.status})`);
         }
         const data = await response.json();
-        console.log("Canais: Dados carregados:", data); // Log para depuração
+        
 
         // Limpa containers antes de renderizar
         mainChannelsContainer.innerHTML = '';
