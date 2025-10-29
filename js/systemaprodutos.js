@@ -41,7 +41,7 @@ export async function fetchAndRenderProducts(filter) {
         // 1. Adiciona filtro de vendedor SE estiver ativo
         if (currentSellerFilterId) {
             q_constraints.push(where("sellerId", "==", currentSellerFilterId));
-            console.log("Filtrando pelo vendedor:", currentSellerFilterId);
+            
         }
 
         // 2. Adiciona filtros específicos (preço ou itens)
@@ -69,7 +69,7 @@ export async function fetchAndRenderProducts(filter) {
         // 4. Limita o número de resultados
         q_constraints.push(limit(50));
 
-        console.log("Query Constraints:", q_constraints.map(c => c._field ? `${c._field} ${c._op} ${c._value}` : c._query ? c._query.toString() : c.toString()));
+       
 
         const q = query(productsRef, ...q_constraints);
         const querySnapshot = await getDocs(q);
