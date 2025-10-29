@@ -20,7 +20,7 @@ function handleUserDataUpdate() {
             console.error("Erro ao rebuscar dados do usuário após atualização:", error);
         });
     } else {
-         console.log("handleUserDataUpdate: Não atualizou nome (usuário deslogado ou mismatch?)");
+
     }
 }
 
@@ -47,7 +47,7 @@ function setupAuthListener() {
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             // Usuário está logado (código existente)
-            console.log("Usuário logado:", user.uid);
+        
             try {
                 const userData = await fetchUserData(user.uid);
                 currentUser = { ...user, ...userData };
@@ -59,7 +59,7 @@ function setupAuthListener() {
             }
         } else {
             // Usuário está deslogado
-            console.log("Usuário deslogado (detectado por onAuthStateChanged)."); // Log para depuração
+           
             currentUser = null;
             updateUI(null); // <- ESSENCIAL PARA ATUALIZAR A UI
         }
@@ -158,7 +158,7 @@ function setupEventHandlers() {
     // Logout
     const logoutBtn = document.getElementById('logout-btn-panel');
     if (logoutBtn) {
-         console.log("Adicionando listener ao botão Sair"); // Log para depuração
+         
          logoutBtn.addEventListener('click', handleLogout);
     } else {
          console.error("Botão Sair (logout-btn-panel) não encontrado!");
@@ -277,13 +277,13 @@ async function handleEmailLogin(e) {
 }
 
 async function handleLogout(e) {
-    console.log("handleLogout chamado!"); // Log para depuração
+    
     e.preventDefault();
     showLoading(); // Mostra loading
     try {
         await signOut(auth);
         // O onAuthStateChanged DEVE cuidar de chamar updateUI(null).
-        console.log("signOut executado com sucesso."); // Log para depuração
+        
         showToast('Você saiu da sua conta.', 'info');
         navigate('/'); // Redireciona para a página inicial após logout
 
@@ -298,7 +298,7 @@ async function handleLogout(e) {
         showToast('Erro ao tentar sair.', 'error');
     } finally {
         hideLoading(); // Garante que o loading seja escondido SEMPRE
-        console.log("handleLogout finalizado."); // Log para depuração
+       
     }
 }
 
