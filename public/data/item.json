@@ -86,3 +86,14 @@
     ]
   }
 }
+  "punhos": {
+    "icon": "/images/icons/punhos1.png",
+    "items": [
+      "Punho Congelante",
+      "Punho Cobra",
+      "Punho Ardente ",
+      "Punho do Trovão",
+      "Punho Nocauteador ",
+      "Punho Hiperlivro Dragão"
+    ]
+  },
