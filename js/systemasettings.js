@@ -27,7 +27,7 @@ let updatePasswordFeedbackDiv = null;
 // A função init ainda pode receber outras dependências se necessário
 export function init(dependencies) {
     localDb = dependencies.db;
-    console.log("systemasettings.js: init chamado (db atribuído).");
+    
 }
 
 /**
@@ -36,7 +36,7 @@ export function init(dependencies) {
  */
 export async function loadProfileData() {
     // ... (código existente sem alterações) ...
-    console.log("loadProfileData iniciado.");
+    
 
     profileFormElement = document.getElementById('user-settings-form');
     nameInput = document.getElementById('user-settings-name');
@@ -47,7 +47,7 @@ export async function loadProfileData() {
         console.error("Erro Crítico: Elementos do formulário de perfil NÃO encontrados...");
         return;
     } else {
-        console.log("Elementos do formulário encontrados:", { nameInput, phoneInput });
+        
     }
 
     profileFormElement.removeEventListener('submit', handleSettingsUpdate);
@@ -58,17 +58,17 @@ export async function loadProfileData() {
         showToast("Erro crítico na configuração do Firebase.", "error");
         return;
     }
-    console.log("loadProfileData: Objeto 'auth' (importado) verificado.");
+    
 
     const user = auth.currentUser;
-    console.log("loadProfileData: auth.currentUser obtido:", user);
+   
 
     if (!user) {
         console.warn("loadProfileData: Usuário não está logado (auth.currentUser é null/undefined).");
         showToast("Faça login para ver suas configurações.", "error");
         return;
     } else {
-         console.log("loadProfileData: Usuário logado:", user.uid);
+         
     }
 
     nameInput.value = '';
@@ -82,24 +82,23 @@ export async function loadProfileData() {
             throw new Error("Referência do Firestore (db) não está disponível.");
         }
         const userRef = doc(dbRef, "users", user.uid);
-        console.log("Buscando documento Firestore:", userRef.path);
+        
         const userSnap = await getDoc(userRef);
 
         if (userSnap.exists()) {
             const firestoreData = userSnap.data();
-            console.log("Dados do Firestore encontrados:", firestoreData);
+            
 
             const nameFromDb = firestoreData.name || user.displayName || '';
             const phoneFromDb = firestoreData.phone || firestoreData.whatsapp || '';
 
-            console.log("Valor a ser definido para NOME:", `"${nameFromDb}"`);
-            console.log("Valor a ser definido para TELEFONE:", `"${phoneFromDb}"`);
+           
 
             nameInput.value = nameFromDb;
             phoneInput.value = phoneFromDb;
 
             currentUserDataForPage = { uid: user.uid, email: user.email, ...firestoreData };
-            console.log("Valores definidos nos inputs. Verifique a tela.");
+            
 
         } else {
             console.warn("Documento Firestore NÃO encontrado para o usuário:", user.uid);
@@ -119,7 +118,7 @@ export async function loadProfileData() {
          phoneInput.value = '';
     } finally {
         hideLoading();
-        console.log("loadProfileData finalizado.");
+        
     }
 }
 
@@ -128,7 +127,7 @@ export async function loadProfileData() {
  * Configura os botões e formulários da página de segurança.
  */
 export function setupSecurityPage() {
-    console.log("setupSecurityPage iniciado.");
+    
 
     resetPasswordBtn = document.getElementById('reset-password-btn');
     securityFeedbackDiv = document.getElementById('user-security-feedback');
@@ -149,7 +148,7 @@ export function setupSecurityPage() {
     if (resetPasswordBtn) {
          resetPasswordBtn.removeEventListener('click', handlePasswordReset);
          resetPasswordBtn.addEventListener('click', handlePasswordReset);
-         console.log("Listener adicionado ao botão de reset de senha.");
+         
     } else {
         console.warn("Botão de redefinir senha (#reset-password-btn) não encontrado.");
     }
@@ -158,7 +157,7 @@ export function setupSecurityPage() {
     if (updatePasswordForm && newPasswordInput && confirmPasswordInput) {
         updatePasswordForm.removeEventListener('submit', handleUpdatePasswordSubmit);
         updatePasswordForm.addEventListener('submit', handleUpdatePasswordSubmit);
-        console.log("Listener adicionado ao formulário de alterar senha.");
+        
         // Limpa campos ao configurar
         updatePasswordForm.reset();
         if(updatePasswordFeedbackDiv) updatePasswordFeedbackDiv.textContent = '';
@@ -188,7 +187,7 @@ async function handleSettingsUpdate(e) {
         showToast("Erro interno. Tente recarregar.", "error");
         return;
     }
-    console.log("handleSettingsUpdate chamado. auth.currentUser:", auth.currentUser, "currentUserDataForPage:", currentUserDataForPage);
+    
     if (!currentUserDataForPage || !auth.currentUser || currentUserDataForPage.uid !== auth.currentUser.uid) {
         console.error("Falha na validação da sessão!");
         showToast("Sessão inválida ou dados não carregados. Recarregue a página.", "error");
