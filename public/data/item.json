@@ -87,7 +87,6 @@
       "Fitinhas"
     ]
   }
-}
   "punhos": {
     "icon": "/images/icons/punhos1.png",
     "items": [
@@ -98,4 +97,5 @@
       "Punho Nocauteador ",
       "Punho Hiperlivro Dragão"
     ]
-  },
+  }
+}
