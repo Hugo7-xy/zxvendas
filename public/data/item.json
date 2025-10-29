@@ -85,8 +85,9 @@
       {
         "name": "Coelhão",
         "image": "/data/icons/coelhao.png"
-        
-      },
+      } 
+    ] 
+  },
   "parcerias": {
     "icon": "/images/icons/parcerias1.png",
     "items": [
