@@ -1,30 +1,92 @@
 {
-  "populares": {
+"populares": {
     "icon": "/images/icons/Itenspopulares1.png",
     "items": [
-      "Anjo Azul",
-      "Anjo Red",
-      "Anjo Amarela",
-      "Anjo Branca",
-      "Anjo Verde",
-      "Barbinha",
-      "Aventureiro",
-      "Jaqueta Beta",
-      "Cabelo Rosa",
-      "Sombra Roxa",
-      "Calça Jazz",
-      "Calça Sobrevivente",
-      "Gola Alta Preta",
-      "Gola Alta Branca",
-      "Tênis Angelical",
-      "Dunk Master",
-      "Mestres antigos",
-      "Mochila 8BITS",
-      "Jaqueta ASUS",
-      "Jaqueta A80",
-      "Coelhão"
-    ]
-  },
+      {
+        "name": "Anjo Azul",
+        "image": "/images/items/anjo_azul.png"
+      },
+      {
+        "name": "Anjo Red",
+        "image": "/images/items/anjo_red.png"
+      },
+      {
+        "name": "Anjo Amarela",
+        "image": "/images/items/anjo_amarela.png"
+      },
+      {
+        "name": "Anjo Branca",
+        "image": "/images/items/anjo_branca.png"
+      },
+      {
+        "name": "Anjo Verde",
+        "image": "/images/items/anjo_verde.png"
+      },
+      {
+        "name": "Barbinha",
+        "image": "/images/items/barbinha.png"
+      },
+      {
+        "name": "Aventureiro",
+        "image": "/images/items/aventureiro.png"
+      },
+      {
+        "name": "Jaqueta Beta",
+        "image": "/images/items/jaqueta_beta.png"
+      },
+      {
+        "name": "Cabelo Rosa",
+        "image": "/images/items/cabelo_rosa.png"
+      },
+      {
+        "name": "Sombra Roxa",
+        "image": "/images/items/sombraroxa.png"
+      },
+      {
+        "name": "Calça Jazz",
+        "image": "/images/items/calca_jazz.png"
+      },
+      {
+        "name": "Calça Sobrevivente",
+        "image": "/images/items/calca_sobrevivente.png"
+      },
+      {
+        "name": "Gola Alta Preta",
+        "image": "/images/items/gola_alta_preta.png"
+      },
+      {
+        "name": "Gola Alta Branca",
+        "image": "/images/items/gola_alta_branca.png"
+      },
+      {
+        "name": "Tênis Angelical",
+        "image": "/images/items/tenis_angelical.png"
+      },
+      {
+        "name": "Dunk Master",
+        "image": "/images/items/dunk_master.png"
+      },
+      {
+        "name": "Mestres antigos",
+        "image": "/images/items/mestres_antigos.png"
+      },
+      {
+        "name": "Mochila 8BITS",
+        "image": "/images/items/mochila_8bits.png"
+      },
+      {
+        "name": "Jaqueta ASUS",
+        "image": "/images/items/jaqueta_asus.png"
+      },
+      {
+        "name": "Jaqueta A80",
+        "image": "/images/items/jaqueta_a80.png"
+      },
+      {
+        "name": "Coelhão",
+        "image": "/images/items/coelhao.png"
+        ]
+      },
   "parcerias": {
     "icon": "/images/icons/parcerias1.png",
     "items": [
