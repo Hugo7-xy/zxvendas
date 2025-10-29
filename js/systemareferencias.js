@@ -63,7 +63,7 @@ export async function loadReferences() {
 
     // Evita recarregar múltiplas vezes (move a flag para depois da verificação do db)
     if (hasLoaded) {
-        console.log("loadReferences: Skip - Já carregado ou em carregamento.");
+        
         return;
     }
     hasLoaded = true; // Marca como carregado AGORA
