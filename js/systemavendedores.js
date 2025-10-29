@@ -27,7 +27,7 @@ async function fetchSellersData() {
     }
 
     try {
-        console.log("fetchSellersData: Iniciando busca no Firestore...");
+        
         const q = query(
             collection(db, "users"),
             where("role", "==", "vendedor"),
@@ -41,7 +41,7 @@ async function fetchSellersData() {
             loadedSellers.push({ id: doc.id, ...doc.data() });
         });
         sellersData = loadedSellers; // Atribui ao final
-        console.log("fetchSellersData: Dados carregados:", sellersData.length, "encontrados.");
+        
 
     } catch (error) {
         console.error("Erro ao buscar dados dos vendedores:", error);
@@ -51,7 +51,7 @@ async function fetchSellersData() {
          }
     } finally {
         isLoading = false;
-        console.log("fetchSellersData: Finalizado. isLoading:", isLoading, "sellersData:", sellersData);
+        
     }
 }
 
@@ -82,11 +82,11 @@ export async function renderSellersGallery() {
         return;
     }
     if (hasRendered) {
-        console.log("renderSellersGallery: Skip - Já renderizado nesta visualização.");
+        
         return;
     }
 
-    console.log("renderSellersGallery: Iniciando. Estado atual:", { hasRendered, isLoading, sellersData });
+    
 
     // --- Etapa 1: Garantir que 'db' esteja pronto ---
     if (!db) {
@@ -99,21 +99,21 @@ export async function renderSellersGallery() {
     // --- Etapa 2: Verificar/Carregar os dados ---
     if (sellersData === null) {
         if (isLoading) {
-            console.log("Renderizando Vendedores: Aguardando busca em andamento...");
+            
             grid.innerHTML = '<p style="text-align: center; width: 100%;">Carregando vendedores...</p>';
             setTimeout(renderSellersGallery, 300); // Espera um pouco mais
             return;
         } else {
-            console.log("Renderizando Vendedores: Dados não carregados. Iniciando busca...");
+            
             grid.innerHTML = '<p style="text-align: center; width: 100%;">Carregando vendedores...</p>';
             await fetchSellersData(); // Espera a busca (agora usa o 'db' verificado)
-            console.log("Renderizando Vendedores: Busca concluída após await. sellersData:", sellersData);
+            
             // Continua para renderizar
         }
     }
 
     // --- Etapa 3: Renderizar com os dados disponíveis ---
-    console.log("Renderizando Vendedores: Procedendo para renderização/mensagem final.");
+    
 
     if (Array.isArray(sellersData)) {
         if (sellersData.length > 0) {
@@ -122,14 +122,14 @@ export async function renderSellersGallery() {
                 const card = createSellerCard(seller, seller.id);
                 grid.appendChild(card);
             });
-            console.log("Galeria de vendedores renderizada com sucesso.");
+            
         } else {
             // Se chegou aqui com array vazio, ou não há vendedores ou a busca falhou.
             let message = '<p style="text-align: center; width: 100%;">Nenhum vendedor verificado encontrado.</p>';
             // Adiciona aviso sobre erro de índice/console
             message += '<p style="text-align: center; width: 100%; font-size: 0.9em; color: #8b6c43;">(Verifique o console para possíveis erros)</p>';
             grid.innerHTML = message;
-            console.log("Renderizando Vendedores: Array vazio - Nenhum vendedor ou erro na busca.");
+            
         }
     } else {
         // Estado inesperado
@@ -138,7 +138,7 @@ export async function renderSellersGallery() {
     }
 
     hasRendered = true;
-    console.log("renderSellersGallery: Finalizado. hasRendered:", hasRendered);
+    
 }
 
 
@@ -171,13 +171,9 @@ function createSellerCard(seller, sellerId) {
     return card;
 }
 
-/**
- * [EXPORTADO] Reseta a flag que indica se a galeria já foi renderizada. (Sem alterações)
- */
+
 export function resetRenderFlag() {
     hasRendered = false;
-    // Resetar sellersData = null aqui pode forçar uma nova busca sempre,
-    // o que pode ser desejado ou não dependendo se você quer cache entre navegações.
-    // sellersData = null; // Descomente se quiser sempre buscar dados frescos ao voltar para /vendedores
-    console.log("systemavendedores: resetRenderFlag() chamada.");
+    
+    
 }
