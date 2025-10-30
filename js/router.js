@@ -7,8 +7,8 @@ import { loadProfileData, setupSecurityPage } from './systemasettings.js';
 // Importa funções de carregamento das outras páginas
 import { loadChannelData } from './systemacanais.js'; // Importa função de carregar canais
 import { loadReferences } from './systemareferencias.js'; // Importa função de carregar referências
-// Importa a função de renderizar vendedores e a de resetar a flag
-import { renderSellersGallery, resetRenderFlag as resetSellersRenderFlag } from './systemavendedores.js';
+// [MODIFICAÇÃO]: Importa a nova função 'getSellerIdAndNameBySlug'
+import { renderSellersGallery, resetRenderFlag as resetSellersRenderFlag, getSellerIdAndNameBySlug } from './systemavendedores.js';
 
 const routes = {
     '/': 'products-page',
@@ -52,8 +52,8 @@ function updateFilterFabVisibility() {
 }
 
 
-// Função principal que lida com a mudança de rota
-export function handleRouteChange() {
+// [MODIFICAÇÃO]: A função principal agora é 'async'
+export async function handleRouteChange() {
     closeFilterPanel(); // Fecha painel de filtro ao mudar de rota
     const path = window.location.pathname;
     const allPages = document.querySelectorAll('.page-content');
@@ -83,27 +83,48 @@ export function handleRouteChange() {
         }
     }
 
-    // Verifica se é uma URL de perfil de vendedor (/vendedores/nome-do-vendedor)
+    // [MODIFICAÇÃO]: Lógica de /vendedores/ atualizada
     if (path.startsWith('/vendedores/')) {
         const sellerIdFromState = history.state?.sellerId;
-        const sellerNameFromUrl = decodeURIComponent(path.split('/vendedores/')[1]);
+        const sellerNameFromUrlSlug = decodeURIComponent(path.split('/vendedores/')[1]); // "nome-do-vendedor"
+
+        let sellerInfo = null;
 
         if (sellerIdFromState) {
+            // 1. Navegação interna (clique no card), já temos o ID
+            sellerInfo = { 
+                sellerId: sellerIdFromState, 
+                sellerName: history.state?.sellerName || 'Vendedor'
+            };
+        } else {
+            // 2. Carregamento direto (Google, link colado) - PRECISAMOS BUSCAR O ID
+            try {
+                // Chama a nova função de systemavendedores.js
+                sellerInfo = await getSellerIdAndNameBySlug(sellerNameFromUrlSlug);
+            } catch (e) {
+                console.error("Router: Erro ao buscar Vendedor pelo slug:", e);
+                sellerInfo = null;
+            }
+        }
+
+        // 3. Agora, verificamos se temos as informações do vendedor (de qualquer fonte)
+        if (sellerInfo && sellerInfo.sellerId) {
             currentPageId = routes['/']; // Mostra a página de produtos
-            currentSellerFilterId = sellerIdFromState;
-            currentSellerFilterName = history.state?.sellerName || sellerNameFromUrl;
+            currentSellerFilterId = sellerInfo.sellerId;
+            currentSellerFilterName = sellerInfo.sellerName;
 
             if (sellerProductsHeader) sellerProductsHeader.classList.remove('hidden');
             if (sellerProductsTitle) sellerProductsTitle.textContent = `Contas de ${currentSellerFilterName}`;
 
             document.dispatchEvent(new CustomEvent('sellerSelected', { detail: { sellerId: currentSellerFilterId }}));
             produtos.fetchAndRenderProducts({ type: 'seller', value: currentSellerFilterId });
-
+        
         } else {
-             console.warn(`Seller ID not found for ${sellerNameFromUrl}. Showing sellers list.`);
+             // 4. Fallback se não encontrou o vendedor (nem no estado, nem na busca)
+             console.warn(`Vendedor não encontrado para o slug ${sellerNameFromUrlSlug}. Mostrando lista de vendedores.`);
              currentPageId = routes['/vendedores']; // Fallback para a lista de vendedores
              if (sellerProductsHeader) sellerProductsHeader.classList.add('hidden');
-             renderSellersGallery(); // Tenta renderizar a lista de vendedores como fallback
+             renderSellersGallery(); // Tenta renderizar a lista de vendedores
         }
 
     } else if (routes[path]) {
@@ -181,7 +202,7 @@ export function navigate(path, state = {}) {
 }
 
 // Ouve o evento 'popstate' (botões voltar/avançar do navegador)
-window.addEventListener('popstate', handleRouteChange);
+window.addEventListener('popstate', () => handleRouteChange());
 
 // Ouve o carregamento inicial do DOM
 document.addEventListener('DOMContentLoaded', () => {
