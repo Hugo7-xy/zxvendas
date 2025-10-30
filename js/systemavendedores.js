@@ -23,6 +23,26 @@ export function resetRenderFlag() {
     hasRendered = false;
 }
 
+// --- INÍCIO DA CORREÇÃO (FUNÇÃO ADICIONADA) ---
+/**
+ * Gera um slug padronizado a partir de um nome.
+ * (Cópia da função do backend functions/index.js)
+ * @param {string} name O nome a ser convertido.
+ * @return {string} O slug gerado.
+ */
+function createSlug(name) {
+  if (!name) return "";
+  return name
+      .toLowerCase() // Converte para minúsculas
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove acentos
+      .replace(/[^a-z0-9\s-]/g, "") // Remove caracteres não alfanuméricos
+      .trim() // Remove espaços no início/fim
+      .replace(/\s+/g, "-") // Substitui espaços por hífens
+      .replace(/-+/g, "-"); // Remove hífens duplicados
+}
+// --- FIM DA CORREÇÃO (FUNÇÃO ADICIONADA) ---
+
+
 /**
  * Renderiza a galeria de vendedores na página /vendedores.
  */
@@ -67,9 +87,8 @@ export async function renderSellersGallery() {
         querySnapshot.forEach(doc => {
             const seller = doc.data();
             const sellerId = doc.id;
-            // --- MODIFICAÇÃO: Passa o slug (se existir) para createSellerCard ---
+            // Passa o slug (se existir) para createSellerCard
             const card = createSellerCard(seller, sellerId, seller.slug);
-            // --- FIM MODIFICAÇÃO ---
             grid.appendChild(card);
         });
 
@@ -90,10 +109,14 @@ function createSellerCard(seller, sellerId, sellerSlug) {
     card.className = 'seller-card';
 
     const sellerName = seller.name || 'Vendedor Verificado';
-    // --- MODIFICAÇÃO: Usa o slug para o link, se disponível, senão fallback (codifica nome) ---
-    const slugForUrl = sellerSlug || encodeURIComponent(sellerName);
-    card.href = `/vendedores/${slugForUrl}`; // Define o link usando o slug
-    // --- FIM MODIFICAÇÃO ---
+
+    // --- INÍCIO DA CORREÇÃO ---
+    // Se o 'sellerSlug' existir no banco (para vendedores novos), usa ele.
+    // Se não (para vendedores antigos), GERA UM NOVO slug no frontend
+    // usando a *mesma* lógica do backend.
+    const slugForUrl = sellerSlug || createSlug(sellerName);
+    card.href = `/vendedores/${slugForUrl}`; // Define o link usando o slug correto
+    // --- FIM DA CORREÇÃO ---
 
     const photoURL = seller.profileImageUrl || '';
 
@@ -107,13 +130,14 @@ function createSellerCard(seller, sellerId, sellerSlug) {
     // Adiciona listener de clique para usar o router
     card.addEventListener('click', (e) => {
         e.preventDefault();
-        // --- MODIFICAÇÃO: Passa o ID, Nome E Slug via 'state' ---
+        // --- INÍCIO DA CORREÇÃO (STATE) ---
+        // Passa o slug correto (slugForUrl) que acabamos de definir
         navigate(card.getAttribute('href'), {
             sellerId: sellerId,
             sellerName: sellerName,
-            sellerSlug: sellerSlug // <-- Passa o slug aqui
+            sellerSlug: slugForUrl // <-- Passa o slug CORRIGIDO
         });
-        // --- FIM MODIFICAÇÃO ---
+        // --- FIM DA CORREÇÃO (STATE) ---
     });
 
     return card;
