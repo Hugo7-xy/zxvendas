@@ -9,8 +9,9 @@ let sellersData = null;
 let isLoading = false;
 let hasRendered = false;
 
+// [MODIFICAÇÃO]: Adicione 'export'
 // Função para buscar os dados (não é mais chamada de 'preload')
-async function fetchSellersData() {
+export async function fetchSellersData() {
     // Evita múltiplas buscas simultâneas
     if (isLoading) return;
     // Se já temos os dados (mesmo que vazios), não busca de novo
@@ -169,6 +170,37 @@ function createSellerCard(seller, sellerId) {
     });
 
     return card;
+}
+
+// [NOVA FUNÇÃO]
+/**
+ * Busca o ID e o Nome de um vendedor com base no 'slug' (nome-do-vendedor) da URL.
+ * Garante que os dados dos vendedores sejam carregados primeiro, se necessário.
+ */
+export async function getSellerIdAndNameBySlug(slug) {
+    // 1. Garante que os dados dos vendedores estejam carregados
+    if (sellersData === null) {
+        // Chama a função exportada para carregar os dados
+        await fetchSellersData();
+    }
+
+    // 2. Verifica se o carregamento foi bem-sucedido
+    if (!Array.isArray(sellersData)) {
+        console.error("getSellerIdAndNameBySlug: sellersData não é um array após fetch.");
+        return null;
+    }
+
+    // 3. Define a função de "slugify" idêntica à usada em createSellerCard
+    const slugify = (name) => encodeURIComponent((name || '').replace(/\s+/g, '-').toLowerCase());
+
+    // 4. Procura o vendedor
+    const seller = sellersData.find(s => slugify(s.name) === slug);
+
+    // 5. Retorna os dados do vendedor ou null
+    if (seller) {
+        return { sellerId: seller.id, sellerName: seller.name };
+    }
+    return null;
 }
 
 
