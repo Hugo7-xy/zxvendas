@@ -1,7 +1,7 @@
 // js/systemaprodutos.js
 import { showLoading, hideLoading } from './ui.js';
 import { collection, getDocs, query, where, orderBy, doc, getDoc, limit } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
-import { currentSellerFilterId } from './router.js'; // Importa o ID do vendedor ativo
+// REMOVIDA A IMPORTAÇÃO CIRCULAR de currentSellerFilterId
 
 let db;
 let sellerCache = {};
@@ -21,7 +21,7 @@ export function init(dependencies) {
 
 /**
  * Busca e renderiza produtos no grid.
- * (Corrigido para orderBy correto com filtros de preço e vendedor)
+ * (Corrigido para usar o 'filter' recebido, em vez da variável global)
  */
 export async function fetchAndRenderProducts(filter) {
     showLoading();
@@ -31,6 +31,10 @@ export async function fetchAndRenderProducts(filter) {
 
     const requiredItems = (filter.type === 'items' && filter.value?.length > 0) ? filter.value : null;
     const isPriceFilterActive = filter.type === 'price' && filter.value && filter.value !== 'all';
+    // --- INÍCIO DA CORREÇÃO ---
+    // Verifica se o filtro é do tipo 'seller' (vindo do router)
+    const isSellerFilterActive = filter.type === 'seller' && filter.value;
+    // --- FIM DA CORREÇÃO ---
 
     try {
         const productsRef = collection(db, "produtos");
@@ -38,31 +42,31 @@ export async function fetchAndRenderProducts(filter) {
             where("available", "==", true)
         ];
 
-        // 1. Adiciona filtro de vendedor SE estiver ativo
-        if (currentSellerFilterId) {
-            q_constraints.push(where("sellerId", "==", currentSellerFilterId));
-            
+        // --- INÍCIO DA CORREÇÃO ---
+        // 1. Adiciona filtro de vendedor SE estiver ativo (baseado no 'filter' recebido)
+        if (isSellerFilterActive) {
+            q_constraints.push(where("sellerId", "==", filter.value));
+            // Adiciona ordenação por data quando filtrando por vendedor
+            q_constraints.push(orderBy("createdAt", "desc"));
         }
-
+        // --- FIM DA CORREÇÃO ---
+        
         // 2. Adiciona filtros específicos (preço ou itens)
-        if (isPriceFilterActive) {
+        // (Modificado para 'else if' para não conflitar com o filtro de vendedor)
+        else if (isPriceFilterActive) {
             const priceFilter = filter.value;
             if (priceFilter.min) { q_constraints.push(where("price", ">=", priceFilter.min)); }
             if (priceFilter.max && priceFilter.max !== Infinity) { q_constraints.push(where("price", "<=", priceFilter.max)); }
-            // *** CORREÇÃO: A primeira ordenação DEVE ser 'price' por causa da desigualdade ***
             q_constraints.push(orderBy("price", "asc"));
-            // Podemos tentar adicionar uma segunda ordenação, mas pode exigir índice composto
             // q_constraints.push(orderBy("createdAt", "desc")); // Descomente se tiver o índice
 
         } else if (filter.type === 'items' && requiredItems) {
             const limitedItems = requiredItems.slice(0, 10);
             q_constraints.push(where("tags", "array-contains-any", limitedItems));
-            // *** CORREÇÃO: Adiciona ordenação padrão por data QUANDO NÃO HÁ FILTRO DE PREÇO ***
             q_constraints.push(orderBy("createdAt", "desc"));
 
         } else {
-             // Caso 'all' price ou nenhum filtro específico (apenas vendedor talvez)
-             // *** CORREÇÃO: Adiciona ordenação padrão por data ***
+             // Caso 'all' price ou nenhum filtro (página inicial)
              q_constraints.push(orderBy("createdAt", "desc"));
         }
 
@@ -80,7 +84,7 @@ export async function fetchAndRenderProducts(filter) {
             const product = doc.data();
             const productId = doc.id;
 
-            // Filtro client-side para 'items' continua necessário se a consulta foi 'array-contains-any'
+            // Filtro client-side para 'items'
             if (requiredItems) {
                 const productTags = product.tags || [];
                 const productContainsAllItems = requiredItems.every(item => productTags.includes(item));
@@ -103,12 +107,10 @@ export async function fetchAndRenderProducts(filter) {
     } catch (error) {
         console.error("Erro ao buscar produtos:", error);
          if (error.message.includes("requires an index")) {
-            // A mensagem de erro agora pode sugerir um índice composto (sellerId, price, createdAt por exemplo)
             productGrid.innerHTML = `<p>Erro: Índice do Firestore ausente ou inválido para esta combinação de filtros e ordenação. <a href="${extractIndexLink(error.message)}" target="_blank" style="color: #c8a664; text-decoration: underline;">Clique aqui para criar o índice necessário</a> e tente novamente após alguns minutos.</p>`;
          } else if (error.message.includes("maximum 10")) {
              productGrid.innerHTML = '<p>Erro: Selecione no máximo 10 itens para filtrar.</p>';
          } else if (error.message.includes("inequality") && error.message.includes("orderBy")) {
-             // Captura genérica do erro que você viu
              productGrid.innerHTML = `<p>Erro de consulta: ${error.message}. Verifique a combinação de filtros e ordenação.</p>`;
          }
          else {
@@ -124,21 +126,21 @@ export async function fetchAndRenderProducts(filter) {
  * Helper para extrair o link de criação de índice do erro do Firestore
  */
 function extractIndexLink(errorMessage) {
-    const match = errorMessage.match(/https?:\/\/[^\s)\]]+/); // Tenta pegar a URL até espaço, ), ou ]
+    const match = errorMessage.match(/https?:\/\/[^\s)\]]+/); // Tenta pegar a URL
     return match ? match[0] : '#';
 }
 /**
  * Busca dados do vendedor (com cache)
  */
 async function getSellerData(sellerId) {
-    if (!sellerId) return { name: 'Vendedor Desconhecido', whatsapp: '' }; // Adiciona verificação
+    if (!sellerId) return { name: 'Vendedor Desconhecido', whatsapp: '' };
     if (sellerCache[sellerId]) { return sellerCache[sellerId]; }
     try {
         const userRef = doc(db, "users", sellerId);
         const userSnap = await getDoc(userRef);
         if (userSnap.exists()) { const data = userSnap.data(); sellerCache[sellerId] = data; return data; }
         console.warn("Documento não encontrado para sellerId:", sellerId);
-        return { name: 'Vendedor', whatsapp: '' }; // Fallback se não encontrar
+        return { name: 'Vendedor', whatsapp: '' }; // Fallback
     } catch (e) { console.error("Erro ao buscar vendedor:", e); return { name: 'Vendedor', whatsapp: '' }; }
 }
 
@@ -150,8 +152,8 @@ function createProductCard(product, productId, sellerData) {
     const formattedPrice = (product.price || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
     const whatsappNumber = sellerData?.whatsapp || '';
-    const sellerNameForMsg = sellerData?.name || 'Vendedor Verificado'; // Usa um nome padrão se não houver
-    const message = `Olá, ${sellerNameForMsg}! Tenho interesse na conta "${product.title || 'sem título'}" no valor de ${formattedPrice}, que vi na ZX Store.`; // Adiciona fallback para título
+    const sellerNameForMsg = sellerData?.name || 'Vendedor Verificado';
+    const message = `Olá, ${sellerNameForMsg}! Tenho interesse na conta "${product.title || 'sem título'}" no valor de ${formattedPrice}, que vi na ZX Store.`;
     const whatsappLink = whatsappNumber ? `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodeURIComponent(message)}` : null;
 
     const videoUrl = product.videoUrl; let videoElementHtml = '';
@@ -162,10 +164,8 @@ function createProductCard(product, productId, sellerData) {
     else if (videoUrl && videoUrl.includes('cdn.discordapp.com') && videoUrl.includes('.mp4')) {
         videoElementHtml = `<video src="${videoUrl}" controls loop muted playsinline preload="metadata"></video>`;
     }
-    // --- INÍCIO DA MODIFICAÇÃO PARA GOOGLE DRIVE ---
     else if (videoUrl && videoUrl.includes('drive.google.com/file/d/')) {
         try {
-            // Extrai o ID do arquivo da URL do Google Drive
             const urlParts = videoUrl.split('/d/');
             const fileId = urlParts[1].split('/')[0];
             const embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
@@ -175,14 +175,13 @@ function createProductCard(product, productId, sellerData) {
             videoElementHtml = `<div class="video-placeholder">URL do Google Drive inválida</div>`;
         }
     }
-    // --- FIM DA MODIFICAÇÃO ---
     else {
         videoElementHtml = `<div class="video-placeholder">Pré-visualização de vídeo indisponível</div>`;
     }
 
     const buttonClass = whatsappLink ? "whatsapp-button" : "whatsapp-button disabled";
     const buttonTag = whatsappLink ? 'a' : 'button';
-    const buttonAttrs = whatsappLink ? `href="${whatsappLink}" target="_blank"` : 'disabled title="WhatsApp do vendedor não disponível"'; // Adiciona title para botão desabilitado
+    const buttonAttrs = whatsappLink ? `href="${whatsappLink}" target="_blank"` : 'disabled title="WhatsApp do vendedor não disponível"';
 
     div.innerHTML = `
         ${videoElementHtml}
