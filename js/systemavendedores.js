@@ -1,5 +1,5 @@
 // js/systemavendedores.js
-// (Este é o conteúdo CORRIGIDO)
+// (Este é o conteúdo CORRIGIDO com o await para o DB)
 
 import { collection, getDocs, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
 import { showLoading, hideLoading } from './ui.js';
@@ -23,7 +23,6 @@ export function resetRenderFlag() {
     hasRendered = false;
 }
 
-// --- FUNÇÃO HELPER ADICIONADA ---
 /**
  * Gera um slug padronizado a partir de um nome.
  * (Cópia da função do backend functions/index.js)
@@ -40,13 +39,13 @@ function createSlug(name) {
       .replace(/\s+/g, "-") // Substitui espaços por hífens
       .replace(/-+/g, "-"); // Remove hífens duplicados
 }
-// --- FIM DA FUNÇÃO HELPER ---
 
 
 /**
  * Renderiza a galeria de vendedores na página /vendedores.
  */
 export async function renderSellersGallery() {
+    // Só renderiza uma vez por carregamento de página, a menos que resetRenderFlag seja chamado
     if (hasRendered) return;
 
     const grid = document.getElementById('sellers-grid');
@@ -55,6 +54,7 @@ export async function renderSellersGallery() {
         return;
     }
 
+    // Lógica de retry se o DB não estiver pronto
     if (!db) {
         console.warn("renderSellersGallery: 'db' ainda não está pronto. Tentando novamente em 100ms...");
         grid.innerHTML = '<p style="text-align: center; width: 100%;">Inicializando conexão...</p>';
@@ -62,9 +62,9 @@ export async function renderSellersGallery() {
         return;
     }
 
-    hasRendered = true;
+    hasRendered = true; // Marca como renderizado
     showLoading();
-    grid.innerHTML = '';
+    grid.innerHTML = ''; // Limpa o grid
 
     try {
         const q = query(
@@ -84,7 +84,6 @@ export async function renderSellersGallery() {
         querySnapshot.forEach(doc => {
             const seller = doc.data();
             const sellerId = doc.id;
-            // Passa o slug (se existir) para createSellerCard
             const card = createSellerCard(seller, sellerId, seller.slug);
             grid.appendChild(card);
         });
@@ -105,16 +104,9 @@ function createSellerCard(seller, sellerId, sellerSlug) {
     card.className = 'seller-card';
 
     const sellerName = seller.name || 'Vendedor Verificado';
-
-    // --- INÍCIO DA CORREÇÃO ---
-    // 1. Se o 'sellerSlug' veio do banco (vendedor novo), usa ele.
-    // 2. Se NÃO VEIO (vendedor antigo), GERA O SLUG AQUI no frontend
-    //    usando a *mesma* lógica do backend.
     const slugForUrl = sellerSlug || createSlug(sellerName);
     
-    // 3. Define o link (href) com o slug correto (ex: /vendedores/hugo7m-vendas)
     card.href = `/vendedores/${slugForUrl}`;
-    // --- FIM DA CORREÇÃO ---
 
     const photoURL = seller.profileImageUrl || '';
 
@@ -125,18 +117,13 @@ function createSellerCard(seller, sellerId, sellerSlug) {
         <span class="seller-name">${sellerName}</span>
     `;
 
-    // Adiciona listener de clique para usar o router
     card.addEventListener('click', (e) => {
         e.preventDefault();
-        
-        // --- INÍCIO DA CORREÇÃO (STATE) ---
-        // 4. Passa o slug CORRETO ('slugForUrl') para o state do roteador
         navigate(card.getAttribute('href'), {
             sellerId: sellerId,
             sellerName: sellerName,
-            sellerSlug: slugForUrl // <-- Passa o slug que acabamos de definir
+            sellerSlug: slugForUrl 
         });
-        // --- FIM DA CORREÇÃO (STATE) ---
     });
 
     return card;
@@ -144,19 +131,30 @@ function createSellerCard(seller, sellerId, sellerSlug) {
 
 /**
  * Busca as informações do vendedor (ID e Nome) com base no slug vindo da URL.
- * (Esta função está correta e não precisa de mudanças)
+ * Usado quando a página de um vendedor é carregada diretamente.
  */
 export async function getSellerInfoBySlug(slugFromUrl) {
+    // Se o slug estiver no cache, retorna
     if (sellerSlugCache[slugFromUrl]) {
         return sellerSlugCache[slugFromUrl];
     }
 
+    // --- INÍCIO DA CORREÇÃO ---
+    // Adiciona a lógica de retry para esperar o 'db' ser inicializado
     if (!db) {
-        console.error("getSellerInfoBySlug: 'db' não está pronto.");
-        return null;
+        console.warn("getSellerInfoBySlug: 'db' ainda não está pronto. Tentando novamente em 100ms...");
+        // Retorna uma promessa que tenta de novo
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                // Tenta chamar a si mesma novamente
+                resolve(getSellerInfoBySlug(slugFromUrl)); 
+            }, 100); // Espera 100ms
+        });
     }
+    // --- FIM DA CORREÇÃO ---
 
     try {
+        // Agora que 'db' está disponível, continua a busca
         const q = query(
             collection(db, "users"),
             where("slug", "==", slugFromUrl), // <-- Busca pelo slug
@@ -176,10 +174,10 @@ export async function getSellerInfoBySlug(slugFromUrl) {
 
         const result = {
             sellerId: sellerDoc.id,
-            sellerName: sellerData.name
+            sellerName: sellerData.name // Retorna o nome normal para exibição
         };
 
-        sellerSlugCache[slugFromUrl] = result;
+        sellerSlugCache[slugFromUrl] = result; // Salva no cache usando o slug como chave
         return result;
 
     } catch (error) {
