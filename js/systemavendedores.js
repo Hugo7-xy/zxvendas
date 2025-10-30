@@ -1,211 +1,205 @@
-// js/systemavendedores.js
-// --- Importa db diretamente ---
-import { db } from './firebase-config.js';
-import { collection, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
-import { navigate } from './router.js';
+// js/systemaprodutos.js
+import { showLoading, hideLoading } from './ui.js';
+import { collection, getDocs, query, where, orderBy, doc, getDoc, limit } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
+import { currentSellerFilterId } from './router.js'; // Importa o ID do vendedor ativo
 
-// --- db não é mais passado ou armazenado aqui ---
-let sellersData = null;
-let isLoading = false;
-let hasRendered = false;
+let db;
+let sellerCache = {};
 
-// [MODIFICAÇÃO]: Adicione 'export'
-// Função para buscar os dados (não é mais chamada de 'preload')
-export async function fetchSellersData() {
-    // Evita múltiplas buscas simultâneas
-    if (isLoading) return;
-    // Se já temos os dados (mesmo que vazios), não busca de novo
-    if (sellersData !== null) return;
+export function init(dependencies) {
+    db = dependencies.db;
 
-    isLoading = true;
+    // Carrega todos os produtos inicialmente
+    const initialFilter = { type: 'price', value: 'all' };
+    fetchAndRenderProducts(initialFilter);
 
-    // Verifica se o 'db' importado está pronto
-    if (!db) {
-        console.error("fetchSellersData: Referência do Firestore (db importada) não disponível.");
-        sellersData = []; // Define como erro
-        isLoading = false;
-        return; // Retorna para renderSellersGallery lidar com o array vazio
-    }
+    // Ouve o evento de filtro da sidebar/modal
+    document.addEventListener('filterChanged', (e) => {
+        fetchAndRenderProducts(e.detail);
+    });
+}
+
+/**
+ * Busca e renderiza produtos no grid.
+ * (Corrigido para orderBy correto com filtros de preço e vendedor)
+ */
+export async function fetchAndRenderProducts(filter) {
+    showLoading();
+    const productGrid = document.getElementById('product-grid');
+    if (!productGrid) { hideLoading(); return; }
+    productGrid.innerHTML = '';
+
+    const requiredItems = (filter.type === 'items' && filter.value?.length > 0) ? filter.value : null;
+    const isPriceFilterActive = filter.type === 'price' && filter.value && filter.value !== 'all';
 
     try {
-        
-        const q = query(
-            collection(db, "users"),
-            where("role", "==", "vendedor"),
-            orderBy("lastProductTimestamp", "desc"),
-            orderBy("name", "asc")
-        );
+        const productsRef = collection(db, "produtos");
+        let q_constraints = [
+            where("available", "==", true)
+        ];
 
+        // 1. Adiciona filtro de vendedor SE estiver ativo
+        if (currentSellerFilterId) {
+            q_constraints.push(where("sellerId", "==", currentSellerFilterId));
+            
+        }
+
+        // 2. Adiciona filtros específicos (preço ou itens)
+        if (isPriceFilterActive) {
+            const priceFilter = filter.value;
+            if (priceFilter.min) { q_constraints.push(where("price", ">=", priceFilter.min)); }
+            if (priceFilter.max && priceFilter.max !== Infinity) { q_constraints.push(where("price", "<=", priceFilter.max)); }
+            // *** CORREÇÃO: A primeira ordenação DEVE ser 'price' por causa da desigualdade ***
+            q_constraints.push(orderBy("price", "asc"));
+            // Podemos tentar adicionar uma segunda ordenação, mas pode exigir índice composto
+            // q_constraints.push(orderBy("createdAt", "desc")); // Descomente se tiver o índice
+
+        } else if (filter.type === 'items' && requiredItems) {
+            const limitedItems = requiredItems.slice(0, 10);
+            q_constraints.push(where("tags", "array-contains-any", limitedItems));
+            // *** CORREÇÃO: Adiciona ordenação padrão por data QUANDO NÃO HÁ FILTRO DE PREÇO ***
+            q_constraints.push(orderBy("createdAt", "desc"));
+
+        } else {
+             // Caso 'all' price ou nenhum filtro específico (apenas vendedor talvez)
+             // *** CORREÇÃO: Adiciona ordenação padrão por data ***
+             q_constraints.push(orderBy("createdAt", "desc"));
+        }
+
+        // 4. Limita o número de resultados
+        q_constraints.push(limit(50));
+
+       
+
+        const q = query(productsRef, ...q_constraints);
         const querySnapshot = await getDocs(q);
-        const loadedSellers = [];
-        querySnapshot.forEach(doc => {
-            loadedSellers.push({ id: doc.id, ...doc.data() });
-        });
-        sellersData = loadedSellers; // Atribui ao final
-        
+
+        // --- Filtro Client-Side para Lógica "E" dos Itens ---
+        let finalProductCount = 0;
+        for (const doc of querySnapshot.docs) {
+            const product = doc.data();
+            const productId = doc.id;
+
+            // Filtro client-side para 'items' continua necessário se a consulta foi 'array-contains-any'
+            if (requiredItems) {
+                const productTags = product.tags || [];
+                const productContainsAllItems = requiredItems.every(item => productTags.includes(item));
+                if (!productContainsAllItems) {
+                    continue;
+                }
+            }
+
+            finalProductCount++;
+            const sellerData = await getSellerData(product.sellerId);
+            const card = createProductCard(product, productId, sellerData);
+            productGrid.appendChild(card);
+        }
+        // --- Fim do Filtro Client-Side ---
+
+        if (finalProductCount === 0) {
+            productGrid.innerHTML = '<p>Nenhuma conta encontrada para este filtro.</p>';
+        }
 
     } catch (error) {
-        console.error("Erro ao buscar dados dos vendedores:", error);
-        sellersData = []; // Define como array vazio em caso de erro
+        console.error("Erro ao buscar produtos:", error);
          if (error.message.includes("requires an index")) {
-             console.error("-> Firestore requer um índice composto para esta consulta. Crie-o no console do Firebase.");
+            // A mensagem de erro agora pode sugerir um índice composto (sellerId, price, createdAt por exemplo)
+            productGrid.innerHTML = `<p>Erro: Índice do Firestore ausente ou inválido para esta combinação de filtros e ordenação. <a href="${extractIndexLink(error.message)}" target="_blank" style="color: #c8a664; text-decoration: underline;">Clique aqui para criar o índice necessário</a> e tente novamente após alguns minutos.</p>`;
+         } else if (error.message.includes("maximum 10")) {
+             productGrid.innerHTML = '<p>Erro: Selecione no máximo 10 itens para filtrar.</p>';
+         } else if (error.message.includes("inequality") && error.message.includes("orderBy")) {
+             // Captura genérica do erro que você viu
+             productGrid.innerHTML = `<p>Erro de consulta: ${error.message}. Verifique a combinação de filtros e ordenação.</p>`;
+         }
+         else {
+            productGrid.innerHTML = '<p>Erro ao carregar produtos. Tente novamente.</p>';
          }
     } finally {
-        isLoading = false;
-        
+        hideLoading();
     }
 }
 
-// Função de inicialização chamada pelo app.js (agora mais simples)
-export function init(dependencies) {
-    // Não precisa mais receber ou armazenar 'db' aqui.
-    // Não chama mais preloadSellers aqui.
 
-    // Listener do link da nav (opcional, mas pode ajudar na percepção de velocidade)
-    const navLink = document.querySelector('.nav-link[data-target="sellers-page"]');
-    if (navLink) {
-        navLink.addEventListener('click', (e) => {
-            if (!hasRendered) {
-                 renderSellersGallery(); // Tenta renderizar ao clicar
-            }
-        });
-    }
+/**
+ * Helper para extrair o link de criação de índice do erro do Firestore
+ */
+function extractIndexLink(errorMessage) {
+    const match = errorMessage.match(/https?:\/\/[^\s)\]]+/); // Tenta pegar a URL até espaço, ), ou ]
+    return match ? match[0] : '#';
+}
+/**
+ * Busca dados do vendedor (com cache)
+ */
+async function getSellerData(sellerId) {
+    if (!sellerId) return { name: 'Vendedor Desconhecido', whatsapp: '' }; // Adiciona verificação
+    if (sellerCache[sellerId]) { return sellerCache[sellerId]; }
+    try {
+        const userRef = doc(db, "users", sellerId);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) { const data = userSnap.data(); sellerCache[sellerId] = data; return data; }
+        console.warn("Documento não encontrado para sellerId:", sellerId);
+        return { name: 'Vendedor', whatsapp: '' }; // Fallback se não encontrar
+    } catch (e) { console.error("Erro ao buscar vendedor:", e); return { name: 'Vendedor', whatsapp: '' }; }
 }
 
 /**
- * Renderiza a galeria de vendedores na página.
- * <<< LÓGICA AJUSTADA PARA GARANTIR 'db' >>>
+ * Cria o HTML do Card de Produto
  */
-export async function renderSellersGallery() {
-    const grid = document.getElementById('sellers-grid');
-    if (!grid) {
-        console.error("renderSellersGallery: Elemento #sellers-grid não encontrado!");
-        return;
-    }
-    if (hasRendered) {
-        
-        return;
-    }
+function createProductCard(product, productId, sellerData) {
+    const div = document.createElement('div'); div.className = 'product-card'; div.setAttribute('data-id', productId);
+    const formattedPrice = (product.price || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-    
+    const whatsappNumber = sellerData?.whatsapp || '';
+    const sellerNameForMsg = sellerData?.name || 'Vendedor Verificado'; // Usa um nome padrão se não houver
+    const message = `Olá, ${sellerNameForMsg}! Tenho interesse na conta "${product.title || 'sem título'}" no valor de ${formattedPrice}, que vi na ZX Store.`; // Adiciona fallback para título
+    const whatsappLink = whatsappNumber ? `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodeURIComponent(message)}` : null;
 
-    // --- Etapa 1: Garantir que 'db' esteja pronto ---
-    if (!db) {
-        console.warn("renderSellersGallery: 'db' ainda não está pronto. Tentando novamente em 100ms...");
-        grid.innerHTML = '<p style="text-align: center; width: 100%;">Inicializando conexão...</p>'; // Mensagem de inicialização
-        setTimeout(renderSellersGallery, 100); // Tenta novamente em breve
-        return; // Sai desta execução
+    const videoUrl = product.videoUrl; let videoElementHtml = '';
+    if (videoUrl && (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be'))) {
+        const embedUrl = getYouTubeEmbedUrl(videoUrl);
+        videoElementHtml = `<iframe src="${embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>`;
     }
-
-    // --- Etapa 2: Verificar/Carregar os dados ---
-    if (sellersData === null) {
-        if (isLoading) {
-            
-            grid.innerHTML = '<p style="text-align: center; width: 100%;">Carregando vendedores...</p>';
-            setTimeout(renderSellersGallery, 300); // Espera um pouco mais
-            return;
-        } else {
-            
-            grid.innerHTML = '<p style="text-align: center; width: 100%;">Carregando vendedores...</p>';
-            await fetchSellersData(); // Espera a busca (agora usa o 'db' verificado)
-            
-            // Continua para renderizar
+    else if (videoUrl && videoUrl.includes('cdn.discordapp.com') && videoUrl.includes('.mp4')) {
+        videoElementHtml = `<video src="${videoUrl}" controls loop muted playsinline preload="metadata"></video>`;
+    }
+    // --- INÍCIO DA MODIFICAÇÃO PARA GOOGLE DRIVE ---
+    else if (videoUrl && videoUrl.includes('drive.google.com/file/d/')) {
+        try {
+            // Extrai o ID do arquivo da URL do Google Drive
+            const urlParts = videoUrl.split('/d/');
+            const fileId = urlParts[1].split('/')[0];
+            const embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+            videoElementHtml = `<iframe src="${embedUrl}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen loading="lazy" style="width: 100%; height: 180px;"></iframe>`;
+        } catch (e) {
+            console.error("Erro ao processar URL do Google Drive:", e);
+            videoElementHtml = `<div class="video-placeholder">URL do Google Drive inválida</div>`;
         }
     }
-
-    // --- Etapa 3: Renderizar com os dados disponíveis ---
-    
-
-    if (Array.isArray(sellersData)) {
-        if (sellersData.length > 0) {
-            grid.innerHTML = '';
-            sellersData.forEach(seller => {
-                const card = createSellerCard(seller, seller.id);
-                grid.appendChild(card);
-            });
-            
-        } else {
-            // Se chegou aqui com array vazio, ou não há vendedores ou a busca falhou.
-            let message = '<p style="text-align: center; width: 100%;">Nenhum vendedor verificado encontrado.</p>';
-            // Adiciona aviso sobre erro de índice/console
-            message += '<p style="text-align: center; width: 100%; font-size: 0.9em; color: #8b6c43;">(Verifique o console para possíveis erros)</p>';
-            grid.innerHTML = message;
-            
-        }
-    } else {
-        // Estado inesperado
-        grid.innerHTML = '<p style="text-align: center; width: 100%;">Ocorreu um problema inesperado ao carregar os vendedores.</p>';
-        console.error("renderSellersGallery: Estado inesperado de sellersData:", sellersData);
+    // --- FIM DA MODIFICAÇÃO ---
+    else {
+        videoElementHtml = `<div class="video-placeholder">Pré-visualização de vídeo indisponível</div>`;
     }
 
-    hasRendered = true;
-    
-}
+    const buttonClass = whatsappLink ? "whatsapp-button" : "whatsapp-button disabled";
+    const buttonTag = whatsappLink ? 'a' : 'button';
+    const buttonAttrs = whatsappLink ? `href="${whatsappLink}" target="_blank"` : 'disabled title="WhatsApp do vendedor não disponível"'; // Adiciona title para botão desabilitado
 
+    div.innerHTML = `
+        ${videoElementHtml}
+        <div class="card-content">
+            <h3>${product.title || 'Título não definido'}</h3>
+            <p class="description">${product.description || 'Sem descrição.'}</p>
+            <p class="price">${formattedPrice}</p>
+            <${buttonTag} ${buttonAttrs} class="${buttonClass}">
+                <i class="fab fa-whatsapp"></i> Chamar Vendedor
+            </${buttonTag}>
+        </div>`;
+    return div;
+}
 
 /**
- * Cria o elemento HTML (<a>) para o card de um vendedor. (Sem alterações)
+ * Converte URL normal do YouTube para URL de Embed.
  */
-function createSellerCard(seller, sellerId) {
-    const imageUrl = seller.profileImageUrl || 'https://via.placeholder.com/120?text=Vendedor';
-    const sellerName = seller.name || 'Vendedor Verificado';
-    const encodedSellerName = encodeURIComponent((sellerName).replace(/\s+/g, '-').toLowerCase());
-
-    const card = document.createElement('a');
-    card.className = 'seller-card';
-    card.href = `/vendedores/${encodedSellerName}`;
-    card.setAttribute('data-seller-id', sellerId);
-
-    card.innerHTML = `
-        <div class="seller-image-wrapper">
-            <img src="${imageUrl}" alt="Foto de ${sellerName}" loading="lazy">
-        </div>
-        <span class="seller-name">${sellerName}</span>
-    `;
-
-    card.addEventListener('click', (e) => {
-       e.preventDefault();
-       const path = card.getAttribute('href');
-       navigate(path, { sellerId: sellerId, sellerName: sellerName });
-    });
-
-    return card;
-}
-
-// [NOVA FUNÇÃO]
-/**
- * Busca o ID e o Nome de um vendedor com base no 'slug' (nome-do-vendedor) da URL.
- * Garante que os dados dos vendedores sejam carregados primeiro, se necessário.
- */
-export async function getSellerIdAndNameBySlug(slug) {
-    // 1. Garante que os dados dos vendedores estejam carregados
-    if (sellersData === null) {
-        // Chama a função exportada para carregar os dados
-        await fetchSellersData();
-    }
-
-    // 2. Verifica se o carregamento foi bem-sucedido
-    if (!Array.isArray(sellersData)) {
-        console.error("getSellerIdAndNameBySlug: sellersData não é um array após fetch.");
-        return null;
-    }
-
-    // 3. Define a função de "slugify" idêntica à usada em createSellerCard
-    const slugify = (name) => encodeURIComponent((name || '').replace(/\s+/g, '-').toLowerCase());
-
-    // 4. Procura o vendedor
-    const seller = sellersData.find(s => slugify(s.name) === slug);
-
-    // 5. Retorna os dados do vendedor ou null
-    if (seller) {
-        return { sellerId: seller.id, sellerName: seller.name };
-    }
-    return null;
-}
-
-
-export function resetRenderFlag() {
-    hasRendered = false;
-    
-    
+function getYouTubeEmbedUrl(url) {
+    if (!url) return ''; try { const urlObj = new URL(url); let videoId; if (urlObj.hostname === 'youtu.be') { videoId = urlObj.pathname.slice(1); } else if (urlObj.hostname.includes('youtube.com')) { videoId = urlObj.searchParams.get('v'); } if (videoId) { return `https://www.youtube.com/embed/${videoId}`; } else { console.warn("Não foi possível extrair videoId do YouTube:", url); return ''; } } catch (e) { console.error("URL de vídeo inválida:", url, e); return ''; }
 }
