@@ -8,7 +8,27 @@ const { Timestamp } = require("firebase-admin/firestore");
 
 initializeApp();
 
+// --- NOVA FUNÇÃO HELPER ---
+/**
+ * Gera um slug padronizado a partir de um nome.
+ * Ex: "Hugo7 VENDAS" -> "hugo7-vendas"
+ * @param {string} name O nome a ser convertido.
+ * @return {string} O slug gerado.
+ */
+function createSlug(name) {
+  if (!name) return "";
+  return name
+      .toLowerCase() // Converte para minúsculas
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove acentos
+      .replace(/[^a-z0-9\s-]/g, "") // Remove caracteres não alfanuméricos (exceto espaço e hífen)
+      .trim() // Remove espaços no início/fim
+      .replace(/\s+/g, "-") // Substitui espaços por hífens
+      .replace(/-+/g, "-"); // Remove hífens duplicados
+}
+// --- FIM NOVA FUNÇÃO ---
+
 exports.createClientUser = onCall(async (request) => {
+  // ... (código existente sem alterações) ...
   const {email, password, name, phone} = request.data || {};
 
   if (!email || !password || !name || !phone) {
@@ -56,9 +76,31 @@ exports.createSeller = onCall(async (request) => {
         "Todos os campos são obrigatórios.");
   }
 
+  // --- MODIFICAÇÃO: Gera o slug ---
+  const slug = createSlug(name);
+  if (!slug) {
+    // Adiciona validação extra caso o nome resulte em slug vazio
+    throw new HttpsError("invalid-argument",
+        "O nome do vendedor resultou em um slug inválido.");
+  }
+  // --- FIM MODIFICAÇÃO ---
+
   try {
     const adminAuth = getAuth();
     const adminDb = getFirestore();
+
+    // --- MODIFICAÇÃO: Verifica se o slug já existe (opcional, mas recomendado) ---
+    const existingSellerBySlug = await adminDb.collection("users")
+        .where("slug", "==", slug)
+        .limit(1)
+        .get();
+
+    if (!existingSellerBySlug.empty) {
+      throw new HttpsError("already-exists",
+          `Já existe um vendedor com um nome similar ('${slug}'). Escolha um nome ligeiramente diferente.`);
+    }
+    // --- FIM MODIFICAÇÃO ---
+
 
     const userRecord = await adminAuth.createUser({
       email,
@@ -72,18 +114,29 @@ exports.createSeller = onCall(async (request) => {
     await adminDb
         .collection("users")
         .doc(uid)
-        .set({name, email, whatsapp, role: "vendedor", createdAt: new Date()});
+        // --- MODIFICAÇÃO: Salva o slug no Firestore ---
+        .set({
+          name,
+          email,
+          whatsapp,
+          slug, // <-- Adiciona o slug aqui
+          role: "vendedor",
+          createdAt: new Date(),
+        });
+        // --- FIM MODIFICAÇÃO ---
 
     return {success: true, uid};
   } catch (error) {
     if (error.code === "auth/email-already-exists") {
       throw new HttpsError("already-exists", "Este e-mail já está em uso.");
     }
-    throw new HttpsError("internal", error.message || String(error));
+    // Repassa outros erros, incluindo o de slug duplicado
+    throw new HttpsError(error.code || "internal", error.message || String(error));
   }
 });
 
 exports.deleteSeller = onCall(async (request) => {
+  // ... (código existente sem alterações) ...
   if (!request.auth || !request.auth.token ||
       request.auth.token.role !== "admin") {
     throw new HttpsError("permission-denied",
@@ -108,11 +161,9 @@ exports.deleteSeller = onCall(async (request) => {
     throw new HttpsError("internal", error.message || String(error));
   }
 });
-/**
- * Atualiza o timestamp do último produto adicionado pelo vendedor.
- * Acionada quando um novo documento é criado em 'produtos'.
- */
+
 exports.updateSellerLastProductTimestamp = onDocumentCreated("produtos/{productId}", async (event) => {
+  // ... (código existente sem alterações) ...
   // Pega os dados do novo produto
   const snapshot = event.data;
   if (!snapshot) {
