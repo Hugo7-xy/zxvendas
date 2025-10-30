@@ -201,4 +201,5 @@ function createProductCard(product, productId, sellerData) {
  * Converte URL normal do YouTube para URL de Embed.
  */
 function getYouTubeEmbedUrl(url) {
-    if (!url) return ''; try { const urlObj = new URL(url); let videoId; if (urlObj.hostname === 'youtu.be') { videoId = urlObj.pathname.slice(1); } else if (urlObj.hostname.includes('youtube.com')) { videoId = urlObj.searchParams.get('v'); } if (videoId) { return `https://www.youtube.com/embed/${videoId}`; } else { console.warn("Não foi possível extrair videoId do YouTube:", url); return ''; } } catch (
+    if (!url) return ''; try { const urlObj = new URL(url); let videoId; if (urlObj.hostname === 'youtu.be') { videoId = urlObj.pathname.slice(1); } else if (urlObj.hostname.includes('youtube.com')) { videoId = urlObj.searchParams.get('v'); } if (videoId) { return `https://www.youtube.com/embed/${videoId}`; } else { console.warn("Não foi possível extrair videoId do YouTube:", url); return ''; } } catch (e) { console.error("URL de vídeo inválida:", url, e); return ''; }
+}
