@@ -7,7 +7,7 @@ import { navigate } from './router.js'; // Importa o router para navegação
 
 let db;
 let hasRendered = false; // Flag para evitar renderização duplicada
-let sellerNameCache = {}; // Cache para a função getSellerIdAndNameBySlug
+let sellerSlugCache = {}; // Cache para a função getSellerInfoBySlug (chave é o slug)
 
 /**
  * Inicializa o módulo, recebendo a dependência do Firestore.
@@ -17,22 +17,19 @@ export function init(dependencies) {
 }
 
 /**
- * [FUNÇÃO CORRIGIDA]
  * Reseta a flag para permitir que a galeria seja renderizada novamente.
- * Isso corrige o erro de build.
  */
 export function resetRenderFlag() {
     hasRendered = false;
 }
 
 /**
- * [FUNÇÃO FALTANTE]
  * Renderiza a galeria de vendedores na página /vendedores.
  */
 export async function renderSellersGallery() {
     // Só renderiza uma vez por carregamento de página, a menos que resetRenderFlag seja chamado
-    if (hasRendered) return; 
-    
+    if (hasRendered) return;
+
     const grid = document.getElementById('sellers-grid');
     if (!grid) {
         console.error("renderSellersGallery: Elemento #sellers-grid não encontrado!");
@@ -45,7 +42,7 @@ export async function renderSellersGallery() {
         setTimeout(renderSellersGallery, 100);
         return;
     }
-    
+
     hasRendered = true; // Marca como renderizado
     showLoading();
     grid.innerHTML = ''; // Limpa o grid
@@ -53,7 +50,7 @@ export async function renderSellersGallery() {
     try {
         // Busca vendedores, ordenados por nome
         const q = query(
-            collection(db, "users"), 
+            collection(db, "users"),
             where("role", "==", "vendedor"),
             orderBy("name", "asc")
             // orderBy("lastProductTimestamp", "desc") // Alternativa (requer índice composto)
@@ -70,7 +67,9 @@ export async function renderSellersGallery() {
         querySnapshot.forEach(doc => {
             const seller = doc.data();
             const sellerId = doc.id;
-            const card = createSellerCard(seller, sellerId);
+            // --- MODIFICAÇÃO: Passa o slug (se existir) para createSellerCard ---
+            const card = createSellerCard(seller, sellerId, seller.slug);
+            // --- FIM MODIFICAÇÃO ---
             grid.appendChild(card);
         });
 
@@ -84,84 +83,88 @@ export async function renderSellersGallery() {
 
 /**
  * Cria o HTML do card do vendedor (baseado no style.css).
+ * --- MODIFICAÇÃO: Recebe e usa o slug ---
  */
-function createSellerCard(seller, sellerId) {
+function createSellerCard(seller, sellerId, sellerSlug) {
     const card = document.createElement('a');
     card.className = 'seller-card';
-    
+
     const sellerName = seller.name || 'Vendedor Verificado';
-    // Codifica o nome para ser usado na URL
-    const slug = encodeURIComponent(sellerName); 
-    card.href = `/vendedores/${slug}`; // Define o link
+    // --- MODIFICAÇÃO: Usa o slug para o link, se disponível, senão fallback (codifica nome) ---
+    const slugForUrl = sellerSlug || encodeURIComponent(sellerName);
+    card.href = `/vendedores/${slugForUrl}`; // Define o link usando o slug
+    // --- FIM MODIFICAÇÃO ---
 
     const photoURL = seller.profileImageUrl || '';
-    
-    // O CSS usa um ::before para o ícone, então só precisamos da imagem
+
     card.innerHTML = `
         <div class="seller-image-wrapper">
             ${photoURL ? `<img src="${photoURL}" alt="${sellerName}">` : ''}
         </div>
         <span class="seller-name">${sellerName}</span>
     `;
-    
+
     // Adiciona listener de clique para usar o router
     card.addEventListener('click', (e) => {
         e.preventDefault();
-        // Passa o ID e o Nome via 'state' para o router
-        navigate(card.getAttribute('href'), { 
-            sellerId: sellerId, 
-            sellerName: sellerName 
+        // --- MODIFICAÇÃO: Passa o ID, Nome E Slug via 'state' ---
+        navigate(card.getAttribute('href'), {
+            sellerId: sellerId,
+            sellerName: sellerName,
+            sellerSlug: sellerSlug // <-- Passa o slug aqui
         });
+        // --- FIM MODIFICAÇÃO ---
     });
 
     return card;
 }
 
 /**
- * [FUNÇÃO FALTANTE]
- * Busca o ID do vendedor com base no nome (slug) vindo da URL.
+ * Busca as informações do vendedor (ID e Nome) com base no slug vindo da URL.
  * Usado quando a página de um vendedor é carregada diretamente.
+ * --- MODIFICAÇÃO: Renomeada e busca por 'slug' ---
  */
-export async function getSellerIdAndNameBySlug(nameFromSlug) {
-    // Se o nome estiver no cache, retorna
-    if (sellerNameCache[nameFromSlug]) {
-        return sellerNameCache[nameFromSlug];
+export async function getSellerInfoBySlug(slugFromUrl) {
+    // Se o slug estiver no cache, retorna
+    if (sellerSlugCache[slugFromUrl]) {
+        return sellerSlugCache[slugFromUrl];
     }
 
     if (!db) {
-        console.error("getSellerIdAndNameBySlug: 'db' não está pronto.");
+        console.error("getSellerInfoBySlug: 'db' não está pronto.");
         return null;
     }
 
     try {
-        // Busca no Firestore pelo nome exato (que veio da URL)
+        // --- MODIFICAÇÃO: Busca no Firestore pelo campo 'slug' ---
         const q = query(
-            collection(db, "users"), 
-            where("name", "==", nameFromSlug), 
-            where("role", "==", "vendedor"), 
+            collection(db, "users"),
+            where("slug", "==", slugFromUrl), // <-- Busca pelo slug
+            where("role", "==", "vendedor"),
             limit(1)
         );
-        
+        // --- FIM MODIFICAÇÃO ---
+
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-            console.warn(`Nenhum vendedor encontrado com o nome: ${nameFromSlug}`);
+            console.warn(`Nenhum vendedor encontrado com o slug: ${slugFromUrl}`);
             return null;
         }
 
         const sellerDoc = querySnapshot.docs[0];
         const sellerData = sellerDoc.data();
-        
-        const result = { 
-            sellerId: sellerDoc.id, 
-            sellerName: sellerData.name 
+
+        const result = {
+            sellerId: sellerDoc.id,
+            sellerName: sellerData.name // Retorna o nome normal para exibição
         };
-        
-        sellerNameCache[nameFromSlug] = result; // Salva no cache
+
+        sellerSlugCache[slugFromUrl] = result; // Salva no cache usando o slug como chave
         return result;
-        
+
     } catch (error) {
-        console.error("Erro ao buscar vendedor por slug (nome):", error);
+        console.error("Erro ao buscar vendedor por slug:", error);
         return null;
     }
 }
