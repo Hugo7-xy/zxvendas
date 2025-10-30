@@ -9,13 +9,11 @@ let sellerCache = {};
 export function init(dependencies) {
     db = dependencies.db;
 
-    // [MODIFICAÇÃO]: Remover a chamada inicial daqui.
-    // O router.js (em handleRouteChange) será o único responsável
-    // por chamar fetchAndRenderProducts na carga da página.
-    // const initialFilter = { type: 'price', value: 'all' };
-    // fetchAndRenderProducts(initialFilter); // <-- ESTA LINHA FOI REMOVIDA/COMENTADA
+    // Carrega todos os produtos inicialmente
+    const initialFilter = { type: 'price', value: 'all' };
+    fetchAndRenderProducts(initialFilter);
 
-    // Ouve o evento de filtro da sidebar/modal (MANTER)
+    // Ouve o evento de filtro da sidebar/modal
     document.addEventListener('filterChanged', (e) => {
         fetchAndRenderProducts(e.detail);
     });
@@ -41,9 +39,9 @@ export async function fetchAndRenderProducts(filter) {
         ];
 
         // 1. Adiciona filtro de vendedor SE estiver ativo
-        // (Esta lógica está correta e usa a variável importada)
         if (currentSellerFilterId) {
             q_constraints.push(where("sellerId", "==", currentSellerFilterId));
+            
         }
 
         // 2. Adiciona filtros específicos (preço ou itens)
@@ -200,7 +198,27 @@ function createProductCard(product, productId, sellerData) {
 }
 
 /**
- * Converte URL normal do YouTube para URL de Embed.
+ * [CORRIGIDO] Converte URL normal do YouTube para URL de Embed.
  */
 function getYouTubeEmbedUrl(url) {
-    if (!url) return ''; try { const urlObj = new URL(url); let videoId; if (urlObj.hostname === 'youtu.be') { videoId = urlObj.pathname.slice(1); } else if (urlObj.hostname.includes('youtube.com')) { videoId = urlObj.searchParams.get('v'); } if (videoId) { return `https://www.youtube.com/embed/${videoId}`; } else { console.warn("Não foi possível extrair videoId do YouTube:", url); return ''; } } catch (e) { console.error("URL de
+    if (!url) return '';
+    try {
+        const urlObj = new URL(url);
+        let videoId;
+        if (urlObj.hostname === 'youtu.be') {
+            videoId = urlObj.pathname.slice(1);
+        } else if (urlObj.hostname.includes('youtube.com')) {
+            videoId = urlObj.searchParams.get('v');
+        }
+
+        if (videoId) {
+            return `https://www.youtube.com/embed/${videoId}`;
+        } else {
+            console.warn("Não foi possível extrair videoId do YouTube:", url);
+            return '';
+        }
+    } catch (e) {
+        console.error("URL de vídeo inválida:", url, e);
+        return '';
+    }
+}
