@@ -1,17 +1,23 @@
 // js/systemaprodutos.js
 import { showLoading, hideLoading } from './ui.js';
+// *** SOLUÇÃO 1: Importar o 'db' diretamente ***
+import { db } from './firebase-config.js'; 
 import { collection, getDocs, query, where, orderBy, doc, getDoc, limit } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
-// MODIFICADO: Importa também o router para pegar o ID diretamente como fallback
 import { currentSellerFilterId as routerSellerId } from './router.js';
 
-let db;
+// *** SOLUÇÃO 2: Remover a variável 'db' global deste módulo ***
+// let db; // <- REMOVIDA
 let sellerCache = {};
 
 export function init(dependencies) {
-    db = dependencies.db;
-    const initialFilter = { type: 'price', value: 'all' };
-    // A chamada inicial pode não precisar carregar nada se o router for carregar depois
-    // fetchAndRenderProducts(initialFilter); // Pode comentar esta linha se o router sempre carrega na inicialização
+    // *** SOLUÇÃO 3: Remover a atribuição do 'db' aqui ***
+    // db = dependencies.db; // <- REMOVIDA
+
+    // A chamada inicial agora é tratada pelo router.js
+    // const initialFilter = { type: 'price', value: 'all' };
+    // fetchAndRenderProducts(initialFilter);
+
+    // Ouve o evento de filtro da sidebar/modal
     document.addEventListener('filterChanged', (e) => {
         fetchAndRenderProducts(e.detail);
     });
@@ -28,7 +34,7 @@ export async function fetchAndRenderProducts(filter) {
     productGrid.innerHTML = ''; // Limpa antes de mostrar o loading interno
 
     // --- LOG ADICIONAL: Verifica o ID do vendedor ---
-    // Usa o ID do router importado como fallback caso o filter não o tenha (embora devesse ter)
+    // Usa o ID do router importado como fallback caso o filter não o tenha
     const sellerIdToFilter = filter?.value?.sellerId || routerSellerId || null;
     console.log(`fetchAndRenderProducts chamado com filtro:`, filter, ` | Usando sellerId: ${sellerIdToFilter}`);
     // --- FIM LOG ---
@@ -39,10 +45,13 @@ export async function fetchAndRenderProducts(filter) {
     const isPriceFilterActive = filter.type === 'price' && filter.value && filter.value !== 'all';
 
     try {
-        if (!db) {
-             throw new Error("Firestore DB não está inicializado.");
-        }
-        const productsRef = collection(db, "produtos");
+        // *** SOLUÇÃO 4: Remover a verificação 'if (!db)' ***
+        // if (!db) { // <- REMOVIDA
+        //     throw new Error("Firestore DB não está inicializado.");
+        // }
+        
+        // 'db' agora vem diretamente do import
+        const productsRef = collection(db, "produtos"); 
         let q_constraints = [
             where("available", "==", true)
         ];
@@ -61,7 +70,6 @@ export async function fetchAndRenderProducts(filter) {
             if (priceFilter.min) { q_constraints.push(where("price", ">=", priceFilter.min)); }
             if (priceFilter.max && priceFilter.max !== Infinity) { q_constraints.push(where("price", "<=", priceFilter.max)); }
             q_constraints.push(orderBy("price", "asc"));
-            // q_constraints.push(orderBy("createdAt", "desc")); // Só descomente se criou o índice composto price+createdAt
 
         } else if (filter.type === 'items' && requiredItems) {
             const limitedItems = requiredItems.slice(0, 10);
@@ -95,16 +103,14 @@ export async function fetchAndRenderProducts(filter) {
                 const product = doc.data();
                 const productId = doc.id;
 
-                // Filtro client-side para 'items' continua necessário se a consulta foi 'array-contains-any'
                 if (requiredItems) {
                     const productTags = product.tags || [];
                     const productContainsAllItems = requiredItems.every(item => productTags.includes(item));
                     if (!productContainsAllItems) {
-                        continue; // Pula este produto
+                        continue; 
                     }
                 }
 
-                // Verifica se o vendedor do produto bate com o filtro (redundante, mas seguro)
                 if (sellerIdToFilter && product.sellerId !== sellerIdToFilter) {
                      console.warn(`Produto ${productId} retornado mas não pertence ao vendedor ${sellerIdToFilter}. Pulando.`);
                      continue;
@@ -119,13 +125,12 @@ export async function fetchAndRenderProducts(filter) {
         }
         // --- Fim do Filtro Client-Side ---
 
-        // Mensagem se NENHUM produto passou pelos filtros (query vazia OU filtro client-side)
         if (finalProductCount === 0) {
             productGrid.innerHTML = '<p>Nenhuma conta encontrada para este filtro.</p>';
         }
 
     } catch (error) {
-        console.error("Erro CRÍTICO ao buscar produtos:", error); // Log do erro completo
+        console.error("Erro CRÍTICO ao buscar produtos:", error); 
          if (error.message && error.message.includes("requires an index")) {
             productGrid.innerHTML = `<p>Erro: Índice do Firestore ausente ou inválido. <a href="${extractIndexLink(error.message)}" target="_blank" style="color: #c8a664; text-decoration: underline;">Clique aqui para criar o índice</a> e tente novamente após alguns minutos.</p>`;
          } else if (error.message && error.message.includes("maximum 10")) {
@@ -133,7 +138,6 @@ export async function fetchAndRenderProducts(filter) {
          } else if (error.message && error.message.includes("inequality") && error.message.includes("orderBy")) {
              productGrid.innerHTML = `<p>Erro de consulta Firestore. Verifique a combinação de filtros e ordenação ou se falta um índice.</p><p style="font-size: 0.8em; color: #8b6c43;">Detalhe: ${error.message}</p>`;
          } else {
-            // Mensagem de erro genérica mais informativa
             productGrid.innerHTML = `<p>Erro ao carregar produtos. Verifique o console do navegador para mais detalhes.</p><p style="font-size: 0.8em; color: #8b6c43;">Erro: ${error.message || 'Erro desconhecido'}</p>`;
          }
     } finally {
@@ -142,32 +146,40 @@ export async function fetchAndRenderProducts(filter) {
 }
 
 
+/**
+ * Helper para extrair o link de criação de índice do erro do Firestore
+ */
 function extractIndexLink(errorMessage) {
-    const match = errorMessage.match(/https?:\/\/[^\s)\]]+/);
+    const match = errorMessage.match(/https?:\/\/[^\s)\]]+/); 
     return match ? match[0] : '#';
 }
-
+/**
+ * Busca dados do vendedor (com cache)
+ */
 async function getSellerData(sellerId) {
-    // ...(código sem alterações)...
-    if (!sellerId) return { name: 'Vendedor Desconhecido', whatsapp: '' };
+    if (!sellerId) return { name: 'Vendedor Desconhecido', whatsapp: '' }; 
     if (sellerCache[sellerId]) { return sellerCache[sellerId]; }
     try {
-        const userRef = doc(db, "users", sellerId);
+        const userRef = doc(db, "users", sellerId); // 'db' vem do import
         const userSnap = await getDoc(userRef);
         if (userSnap.exists()) { const data = userSnap.data(); sellerCache[sellerId] = data; return data; }
         console.warn("Documento não encontrado para sellerId:", sellerId);
-        return { name: 'Vendedor', whatsapp: '' };
+        return { name: 'Vendedor', whatsapp: '' }; // Fallback se não encontrar
     } catch (e) { console.error("Erro ao buscar vendedor:", e); return { name: 'Vendedor', whatsapp: '' }; }
 }
 
+/**
+ * Cria o HTML do Card de Produto
+ */
 function createProductCard(product, productId, sellerData) {
-     // ...(código sem alterações)...
     const div = document.createElement('div'); div.className = 'product-card'; div.setAttribute('data-id', productId);
     const formattedPrice = (product.price || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
     const whatsappNumber = sellerData?.whatsapp || '';
-    const sellerNameForMsg = sellerData?.name || 'Vendedor Verificado';
-    const message = `Olá, ${sellerNameForMsg}! Tenho interesse na conta "${product.title || 'sem título'}" no valor de ${formattedPrice}, que vi na ZX Store.`;
+    const sellerNameForMsg = sellerData?.name || 'Vendedor Verificado'; 
+    const message = `Olá, ${sellerNameForMsg}! Tenho interesse na conta "${product.title || 'sem título'}" no valor de ${formattedPrice}, que vi na ZX Store.`; 
     const whatsappLink = whatsappNumber ? `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodeURIComponent(message)}` : null;
+
     const videoUrl = product.videoUrl; let videoElementHtml = '';
     if (videoUrl && (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be'))) {
         const embedUrl = getYouTubeEmbedUrl(videoUrl);
@@ -190,9 +202,11 @@ function createProductCard(product, productId, sellerData) {
     else {
         videoElementHtml = `<div class="video-placeholder">Pré-visualização de vídeo indisponível</div>`;
     }
+
     const buttonClass = whatsappLink ? "whatsapp-button" : "whatsapp-button disabled";
     const buttonTag = whatsappLink ? 'a' : 'button';
-    const buttonAttrs = whatsappLink ? `href="${whatsappLink}" target="_blank"` : 'disabled title="WhatsApp do vendedor não disponível"';
+    const buttonAttrs = whatsappLink ? `href="${whatsappLink}" target="_blank"` : 'disabled title="WhatsApp do vendedor não disponível"'; 
+
     div.innerHTML = `
         ${videoElementHtml}
         <div class="card-content">
@@ -206,7 +220,9 @@ function createProductCard(product, productId, sellerData) {
     return div;
 }
 
+/**
+ * Converte URL normal do YouTube para URL de Embed.
+ */
 function getYouTubeEmbedUrl(url) {
-    // ...(código sem alterações)...
     if (!url) return ''; try { const urlObj = new URL(url); let videoId; if (urlObj.hostname === 'youtu.be') { videoId = urlObj.pathname.slice(1); } else if (urlObj.hostname.includes('youtube.com')) { videoId = urlObj.searchParams.get('v'); } if (videoId) { return `https://www.youtube.com/embed/${videoId}`; } else { console.warn("Não foi possível extrair videoId do YouTube:", url); return ''; } } catch (e) { console.error("URL de vídeo inválida:", url, e); return ''; }
 }
